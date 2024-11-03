@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ai-assistant")
-@CrossOrigin(origins = "http://localhost:9000")
 public class AiAssistantController {
 
     private final AiAssistantService aiAssistantService;
