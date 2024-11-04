@@ -32,7 +32,7 @@ public class OSSUtils {
         try {
             // 使用文件输入流上传
             ossClient.putObject(new PutObjectRequest(BUCKET_NAME, objectName, file.getInputStream()));
-            System.out.println("图片上传成功！");
+            System.out.println("文件上传成功！");
             return "success";
         } catch (OSSException | IOException oe) {
             System.err.println("上传失败，错误信息: " + oe.getMessage());
