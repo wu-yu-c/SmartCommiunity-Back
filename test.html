@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Files from OSS</title>
+</head>
+<body>
+    <h1>List Files in OSS</h1>
+    <button id="listFilesBtn">列举文件</button>
+    <div id="fileList"></div>
+
+    <script>
+        document.getElementById('listFilesBtn').onclick = function() {
+            fetch('http://localhost:80/OSS/api/listFiles') // 根据您的接口地址进行调整
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const fileListDiv = document.getElementById('fileList');
+                    fileListDiv.innerHTML = ''; // 清空之前的内容
+
+                    if (data.code === 200) {
+                        const files = data.files;
+                        if (files.length > 0) {
+                            const ul = document.createElement('ul');
+                            files.forEach(file => {
+                                const li = document.createElement('li');
+                                li.textContent = file; // 显示文件名
+                                ul.appendChild(li);
+                            });
+                            fileListDiv.appendChild(ul);
+                        } else {
+                            fileListDiv.textContent = '没有找到文件';
+                        }
+                    } else {
+                        fileListDiv.textContent = '错误: ' + data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error('请求失败:', error);
+                });
+        };
+    </script>
+</body>
+</html>
