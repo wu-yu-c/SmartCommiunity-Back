@@ -1,0 +1,38 @@
+package com.example.SmartCommunity.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.sql.Timestamp; // 导入 Timestamp
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "User")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "UserID")
+    private Long userID;
+
+    @Column(name = "UserName", nullable = false, unique = true)
+    private String username;
+
+    @Column(name = "Password", nullable = false)
+    private String password;
+
+    @Column(name = "UserEmail")
+    private String userEmail;
+
+    @Column(name = "CreatedTime", insertable = false, updatable = false)
+    private Timestamp createdTime;
+
+    // Getters and Setters
+    // Lombok 的 @Getter 和 @Setter 自动生成
+}
