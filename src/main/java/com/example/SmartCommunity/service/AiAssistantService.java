@@ -5,5 +5,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface AiAssistantService {
-    String assistantResponse(@NotNull String messageContent, @NotNull Integer residentId);
+    String assistantResponse(@NotNull String messageContent, @NotNull Integer userId);
 }
