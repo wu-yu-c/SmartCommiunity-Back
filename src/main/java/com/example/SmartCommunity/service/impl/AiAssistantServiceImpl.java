@@ -1,7 +1,7 @@
 package com.example.SmartCommunity.service.impl;
 
-import com.example.SmartCommunity.model.Resident;
 import com.example.SmartCommunity.model.UserMessage;
+import com.example.SmartCommunity.model.Resident;
 import com.example.SmartCommunity.repository.ResidentRepository;
 import com.example.SmartCommunity.repository.UserMessageRepository;
 import com.example.SmartCommunity.service.AiAssistantService;
