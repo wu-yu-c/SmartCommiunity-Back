@@ -20,16 +20,16 @@ public class Resident {
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Name", nullable = false)
+    @Column(name = "ResidentName", nullable = false)
     private String name;
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Address", nullable = false)
+    @Column(name = "ResidentAddress", nullable = false)
     private String address;
 
     @Size(max = 50)
-    @Column(name = "PhoneNumber", length = 50)
+    @Column(name = "ResidentPhoneNumber", length = 50)
     private String phoneNumber;
 
 }

@@ -6,6 +6,7 @@ import com.example.SmartCommunity.repository.ResidentRepository;
 import com.example.SmartCommunity.repository.UserMessageRepository;
 import com.example.SmartCommunity.service.AiAssistantService;
 import com.example.SmartCommunity.util.AiResponseGenerator;
+import com.zhipu.oapi.service.v4.model.ChatMessage;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +29,9 @@ public class AiAssistantServiceImpl implements AiAssistantService {
 
     @Override
     public String assistantResponse(String message, Integer userId) {
-        return saveUserMessage(null, message);
-//        return residentRepository.findById(userId)
-//                .map(resident -> saveUserMessage(resident, message))
-//                .orElse("resident not found");
+        return residentRepository.findById(userId)
+                .map(resident -> saveUserMessage(resident, message))
+                .orElse("resident not found");
     }
 
     private String saveUserMessage(Resident resident, String message) {
@@ -40,7 +40,12 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         userMessage.setMessageContent(message);
         userMessage.setSentAt(Instant.now());
 
-        // userMessageRepository.save(userMessage);
-        return aiResponseGenerator.generateResponse(message);
+        userMessageRepository.save(userMessage);
+        ChatMessage response = aiResponseGenerator.generateResponse(message);
+        var result = response.getContent();
+        if (result instanceof String) {
+            return (String) result;
+        }
+        return "ai生成的内容不是文本，请更换模型";
     }
 }
