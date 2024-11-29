@@ -30,6 +30,7 @@ public class EvaluatorController {
             List<Evaluator> evaluators = evaluatorService.getAllEvaluators();
             List<EvaluatorResponseDTO> responseDTOs = evaluators.stream()
                     .map(evaluator -> new EvaluatorResponseDTO(
+                            evaluator.getEvaluatorID(),
                             evaluator.getName(),
                             evaluator.getPosition(),
                             evaluator.getAvatar()))
@@ -51,6 +52,7 @@ public class EvaluatorController {
             List<Evaluator> evaluators = evaluatorService.searchEvaluators(name, department);
             List<EvaluatorResponseDTO> responseDTOs = evaluators.stream()
                     .map(evaluator -> new EvaluatorResponseDTO(
+                            evaluator.getEvaluatorID(),
                             evaluator.getName(),
                             evaluator.getPosition(),
                             evaluator.getAvatar()))
