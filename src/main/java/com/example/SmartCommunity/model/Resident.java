@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "Resident")
+@Table(name = "Resident", schema = "testdb")
 public class Resident {
     @Id
     @Column(name = "ResidentID", nullable = false)
@@ -21,15 +21,15 @@ public class Resident {
     @Size(max = 255)
     @NotNull
     @Column(name = "ResidentName", nullable = false)
-    private String name;
+    private String residentName;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "ResidentAddress", nullable = false)
-    private String address;
+    private String residentAddress;
 
     @Size(max = 50)
     @Column(name = "ResidentPhoneNumber", length = 50)
-    private String phoneNumber;
+    private String residentPhoneNumber;
 
 }
