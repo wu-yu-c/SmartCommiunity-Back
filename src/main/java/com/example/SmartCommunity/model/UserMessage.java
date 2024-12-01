@@ -18,7 +18,7 @@ public class UserMessage {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ResidentID")
+    @JoinColumn(name = "UserID")
     private Resident residentID;
 
     @NotNull

@@ -14,8 +14,8 @@ import java.util.List;
 @Component
 public class GlmGenerator implements AiResponseGenerator {
     @Override
-    public String generateResponse(String message) {
-        return doSyncRequest("Hello", message, STABLE_TEMPERATURE);
+    public ChatMessage generateResponse(String message) {
+        return doSyncStableRequest("Hello", message);
     }
 
     @Resource
@@ -35,7 +35,7 @@ public class GlmGenerator implements AiResponseGenerator {
      * @param temperature 随机性
      * @return AI响应信息
      */
-    public String doRequest(List<ChatMessage> aiChatMessages, Boolean stream, Float temperature) {
+    private ChatMessage doRequest(List<ChatMessage> aiChatMessages, Boolean stream, Float temperature) {
         ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
                 .model(Constants.ModelChatGLM4)
                 .stream(stream)
@@ -45,11 +45,11 @@ public class GlmGenerator implements AiResponseGenerator {
                 .build();
         try {
             ModelApiResponse invokeModelApiResp = client.invokeModelApi(chatCompletionRequest);
-            return invokeModelApiResp.getData().getChoices().get(0).getMessage().toString();
+            return invokeModelApiResp.getData().getChoices().get(0).getMessage();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return "";
+        return null;
     }
 
     /**
@@ -61,7 +61,7 @@ public class GlmGenerator implements AiResponseGenerator {
      * @param temperature 随机性
      * @return AI响应信息
      */
-    public String doRequest(String systemMessage, String userMessage, Boolean stream, Float temperature) {
+    public ChatMessage doRequest(String systemMessage, String userMessage, Boolean stream, Float temperature) {
         // 构造请求
         List<ChatMessage> aiChatMessages = new ArrayList<>();
         ChatMessage systemChatMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), systemMessage);
@@ -79,7 +79,7 @@ public class GlmGenerator implements AiResponseGenerator {
      * @param temperature 随机性
      * @return AI响应信息
      */
-    public String doSyncRequest(String systemMessage, String userMessage, Float temperature) {
+    public ChatMessage doSyncRequest(String systemMessage, String userMessage, Float temperature) {
         return doRequest(systemMessage, userMessage, Boolean.FALSE, temperature);
     }
 
@@ -90,7 +90,7 @@ public class GlmGenerator implements AiResponseGenerator {
      * @param userMessage 用户信息
      * @return AI响应信息
      */
-    public String doSyncStableRequest(String systemMessage, String userMessage) {
+    public ChatMessage doSyncStableRequest(String systemMessage, String userMessage) {
         return doRequest(systemMessage, userMessage, Boolean.FALSE, STABLE_TEMPERATURE);
     }
 
@@ -101,7 +101,7 @@ public class GlmGenerator implements AiResponseGenerator {
      * @param userMessage 用户信息
      * @return AI响应信息
      */
-    public String doSyncUnStableRequest(String systemMessage, String userMessage) {
+    public ChatMessage doSyncUnStableRequest(String systemMessage, String userMessage) {
         return doRequest(systemMessage, userMessage, Boolean.FALSE, UNSTABLE_TEMPERATURE);
     }
 
