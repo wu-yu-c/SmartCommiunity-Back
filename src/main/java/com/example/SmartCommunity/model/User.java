@@ -27,8 +27,8 @@ public class User {
     @Column(name = "Password", nullable = false)
     private String password;
 
-    @Column(name = "UserEmail")
-    private String userEmail;
+    @Column(name = "UserPhone")
+    private String userPhone;
 
     @Column(name = "CreatedTime", insertable = false, updatable = false)
     private Timestamp createdTime;

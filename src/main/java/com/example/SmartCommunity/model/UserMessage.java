@@ -12,14 +12,16 @@ import java.time.Instant;
 @Entity
 @Table(name = "UserMessage")
 public class UserMessage {
+
     @Id
     @Column(name = "MessageID", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
+    // 外键关联 User 表
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ResidentID")
-    private Resident residentID;
+    @JoinColumn(name = "UserID", referencedColumnName = "UserID", nullable = true)
+    private User user;
 
     @NotNull
     @Lob
@@ -29,5 +31,4 @@ public class UserMessage {
     @NotNull
     @Column(name = "SentAt", nullable = false)
     private Instant sentAt;
-
 }

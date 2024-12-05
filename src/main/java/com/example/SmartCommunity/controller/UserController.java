@@ -17,16 +17,22 @@ public class UserController {
     @Operation(summary = "用户注册接口")
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(
-            @RequestParam String username, @RequestParam String password,
-            @RequestParam(required = false) String userEmail) {
-        Map<String, Object> result = userService.register(username, password, userEmail);
+            @RequestParam String username,
+            @RequestParam String userPhone,
+            @RequestParam String password) {
+        Map<String, Object> result = userService.register(username, userPhone, password);
         return ResponseEntity.status((Integer) result.get("code")).body(result);
     }
 
     @Operation(summary = "用户登录接口")
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(String username, String password) {
-        Map<String, Object> result = userService.login(username, password);
+    public ResponseEntity<Map<String, Object>> login(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String userPhone,
+            @RequestParam String password) {
+
+        // 调用服务层进行用户登录，传入 username 或 userPhone 和密码
+        Map<String, Object> result = userService.login(username, userPhone, password);
         return ResponseEntity.status((Integer) result.get("code")).body(result);
     }
 }

@@ -6,6 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.math.BigDecimal; // 导入 BigDecimal
 import java.sql.Timestamp; // 导入 Timestamp
 import lombok.Getter;
@@ -40,5 +42,14 @@ public class Evaluator {
     @Column(name = "CreatedTime", insertable = false, updatable = false)
     private Timestamp createdTime;
 
-    // 你可以添加其他的方法，如计算评分等
+    // 外键关联 User 表
+    @ManyToOne
+    @JoinColumn(name = "EvaluatorID", referencedColumnName = "UserID", nullable = false) // 外键关联 UserID
+    private User user;
+
+    // 外键关联 ManagementArea 表
+    @ManyToOne
+    @JoinColumn(name = "AreaID", referencedColumnName = "AreaID", nullable = true) // 外键关联 AreaID
+    private ManagementArea managementArea;
+
 }

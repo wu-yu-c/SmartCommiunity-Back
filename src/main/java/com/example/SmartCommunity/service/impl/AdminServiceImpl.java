@@ -23,7 +23,7 @@ public class AdminServiceImpl implements AdminService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public Map<String, Object> register(String adminName, String password, String adminPhone) {
+    public Map<String, Object> register(String adminName, String adminPhone, String password) {
         Map<String, Object> response = new HashMap<>();
 
         // 输入合法性验证
@@ -75,13 +75,13 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Map<String, Object> login(String adminPhone, String password) {
+    public Map<String, Object> login(String adminName, String adminPhone, String password) {
         Map<String, Object> response = new HashMap<>();
 
         // 输入合法性验证
-        if (StringUtils.isBlank(adminPhone)) {
+        if (StringUtils.isBlank(adminName) && StringUtils.isBlank(adminPhone)) {
             response.put("code", HttpStatus.BAD_REQUEST.value());
-            response.put("message", "手机号不能为空");
+            response.put("message", "用户名或手机号不能为空");
             return response;
         }
         if (StringUtils.isBlank(password)) {
@@ -92,21 +92,35 @@ public class AdminServiceImpl implements AdminService {
 
         try {
             // 查找管理员
-            Admin admin = adminRepository.findByAdminPhone(adminPhone);
+            Admin admin = null;
 
-            if (admin != null && passwordEncoder.matches(password, admin.getPassword())) {
-                // 登录成功，生成 token
-                StpUtil.login(admin.getAdminID()); // 使用 Sa-Token 的 login 方法
-
-                response.put("code", HttpStatus.OK.value());
-                response.put("message", "登录成功");
-                response.put("token", StpUtil.getTokenValue()); // 返回生成的 token
-                return response;
-            } else {
+            if (StringUtils.isNotBlank(adminName)) {
+                admin = adminRepository.findByAdminname(adminName);
+            }
+            if (admin == null && StringUtils.isNotBlank(adminPhone)) {
+                admin = adminRepository.findByAdminPhone(adminPhone);
+            }
+            // 如果用户未找到
+            if (admin == null) {
                 response.put("code", HttpStatus.BAD_REQUEST.value());
-                response.put("message", "手机号或密码错误, 登录失败");
+                response.put("message", "用户不存在");
                 return response;
             }
+
+            // 验证密码
+            if (!passwordEncoder.matches(password, admin.getPassword())) {
+                response.put("code", HttpStatus.BAD_REQUEST.value());
+                response.put("message", "密码错误");
+                return response;
+            }
+
+            // 登录成功，生成 token
+            StpUtil.login(admin.getAdminID()); // 使用 Sa-Token 的 login 方法
+
+            response.put("code", HttpStatus.OK.value());
+            response.put("message", "登录成功");
+            response.put("token", StpUtil.getTokenValue()); // 返回生成的 token
+            return response;
 
         } catch (Exception e) {
             response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
