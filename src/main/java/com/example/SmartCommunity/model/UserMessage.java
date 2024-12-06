@@ -31,4 +31,5 @@ public class UserMessage {
     @NotNull
     @Column(name = "SentAt", nullable = false)
     private Instant sentAt;
+
 }

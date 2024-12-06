@@ -51,6 +51,12 @@ public class AdminServiceImpl implements AdminService {
                 return response;
             }
 
+            if (adminRepository.findByAdminName(adminName) != null) {
+                response.put("code", HttpStatus.BAD_REQUEST.value());
+                response.put("message", "名称已存在");
+                return response;
+            }
+
             // 创建新管理员并加密密码
             Admin admin = new Admin();
             admin.setAdminName(adminName);
@@ -95,7 +101,8 @@ public class AdminServiceImpl implements AdminService {
             Admin admin = null;
 
             if (StringUtils.isNotBlank(adminName)) {
-                admin = adminRepository.findByAdminname(adminName);
+                admin = adminRepository.findByAdminName(adminName);
+                System.out.println("adminName: " + adminName);
             }
             if (admin == null && StringUtils.isNotBlank(adminPhone)) {
                 admin = adminRepository.findByAdminPhone(adminPhone);
@@ -123,6 +130,7 @@ public class AdminServiceImpl implements AdminService {
             return response;
 
         } catch (Exception e) {
+            e.printStackTrace(); // 打印堆栈信息
             response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.put("message", "发生未知错误，请稍后再试");
             return response;

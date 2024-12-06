@@ -1,15 +1,8 @@
 package com.example.SmartCommunity.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import java.math.BigDecimal; // 导入 BigDecimal
-import java.sql.Timestamp; // 导入 Timestamp
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,9 +13,13 @@ import lombok.Setter;
 public class Evaluator {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "EvaluatorID")
-    private Long evaluatorID;
+    private Long evaluatorID; // 主键，同时是外键
+
+    @OneToOne
+    @MapsId // 指定主键也是外键
+    @JoinColumn(name = "EvaluatorID", referencedColumnName = "UserID") // 外键关联到 User 表的 UserID
+    private User user;
 
     @Column(name = "Name", nullable = false)
     private String name;
@@ -42,14 +39,8 @@ public class Evaluator {
     @Column(name = "CreatedTime", insertable = false, updatable = false)
     private Timestamp createdTime;
 
-    // 外键关联 User 表
-    @ManyToOne
-    @JoinColumn(name = "EvaluatorID", referencedColumnName = "UserID", nullable = false) // 外键关联 UserID
-    private User user;
-
     // 外键关联 ManagementArea 表
     @ManyToOne
-    @JoinColumn(name = "AreaID", referencedColumnName = "AreaID", nullable = true) // 外键关联 AreaID
+    @JoinColumn(name = "AreaID", referencedColumnName = "AreaID", nullable = true)
     private ManagementArea managementArea;
-
 }

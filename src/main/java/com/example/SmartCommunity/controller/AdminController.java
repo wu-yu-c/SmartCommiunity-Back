@@ -24,8 +24,8 @@ public class AdminController {
 
     @Operation(summary = "管理员登录接口")
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestParam String adminName,
-            @RequestParam String adminPhone, @RequestParam String password) {
+    public ResponseEntity<Map<String, Object>> login(@RequestParam(required = false) String adminName,
+            @RequestParam(required = false) String adminPhone, @RequestParam String password) {
         Map<String, Object> result = adminService.login(adminName, adminPhone, password);
         return ResponseEntity.status((Integer) result.get("code")).body(result);
     }

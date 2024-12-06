@@ -30,7 +30,7 @@ public class ResidentController {
     }
 
     @PutMapping("/{id}")
-    public Resident updateResident(@PathVariable Integer id, @RequestBody Resident resident) {
+    public Resident updateResident(@PathVariable Long id, @RequestBody Resident resident) {
         resident.setId(id);
         return residentService.update(resident);
     }
@@ -41,13 +41,12 @@ public class ResidentController {
     }
 }
 
-
-//GET /api/residents：获取所有居民信息。
+// GET /api/residents：获取所有居民信息。
 //
-//GET /api/residents/{id}：根据 ID 获取指定居民信息。
+// GET /api/residents/{id}：根据 ID 获取指定居民信息。
 //
-//POST /api/residents：创建新的居民信息。
+// POST /api/residents：创建新的居民信息。
 //
-//PUT /api/residents/{id}：更新指定 ID 的居民信息。
+// PUT /api/residents/{id}：更新指定 ID 的居民信息。
 //
-//DELETE /api/residents/{id}：删除指定 ID 的居民信息。
+// DELETE /api/residents/{id}：删除指定 ID 的居民信息。

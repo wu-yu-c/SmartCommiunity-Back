@@ -4,7 +4,6 @@ import com.example.SmartCommunity.service.EvaluatorService;
 import com.example.SmartCommunity.dto.EvaluatorResponseDTO;
 import com.example.SmartCommunity.model.Evaluator;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
@@ -18,7 +17,6 @@ public class EvaluatorController {
 
     private final EvaluatorService evaluatorService;
 
-    @Autowired
     public EvaluatorController(EvaluatorService evaluatorService) {
         this.evaluatorService = evaluatorService;
     }

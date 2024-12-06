@@ -5,7 +5,6 @@ import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.Hibernate;
 
 import java.io.Serial;
 import java.util.Objects;
@@ -26,8 +25,10 @@ public class IssueCategoryMappingId implements java.io.Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         IssueCategoryMappingId entity = (IssueCategoryMappingId) o;
         return Objects.equals(this.issueID, entity.issueID) &&
                 Objects.equals(this.categoryID, entity.categoryID);
