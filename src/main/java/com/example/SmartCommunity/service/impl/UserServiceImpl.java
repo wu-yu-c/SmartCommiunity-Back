@@ -23,11 +23,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // 正则表达式用于验证邮箱格式
-    private static final String EMAIL_PATTERN = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-
     @Override
-    public Map<String, Object> register(String username, String password, String userEmail) {
+    public Map<String, Object> register(String username, String userPhone, String password) {
         Map<String, Object> response = new HashMap<>();
 
         // 输入合法性验证
@@ -46,9 +43,11 @@ public class UserServiceImpl implements UserService {
             response.put("message", "密码长度必须大于等于6");
             return response;
         }
-        if (StringUtils.isNotBlank(userEmail) && !Pattern.matches(EMAIL_PATTERN, userEmail)) {
+
+        // 电话号码格式验证
+        if (StringUtils.isBlank(userPhone) || !Pattern.matches("^[0-9]{10,15}$", userPhone)) {
             response.put("code", HttpStatus.BAD_REQUEST.value());
-            response.put("message", "邮箱格式不正确");
+            response.put("message", "电话号码格式不正确");
             return response;
         }
 
@@ -64,7 +63,7 @@ public class UserServiceImpl implements UserService {
             User user = new User();
             user.setUsername(username);
             user.setPassword(passwordEncoder.encode(password)); // 加密密码
-            user.setUserEmail(userEmail != null ? userEmail : ""); // 如果 userEmail 为空，则设置为空字符串
+            user.setUserPhone(userPhone); // 存储电话号码
 
             userRepository.save(user); // 保存用户，自动生成 UserID
 
@@ -84,13 +83,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Object> login(String username, String password) {
+    public Map<String, Object> login(String username, String userPhone, String password) {
         Map<String, Object> response = new HashMap<>();
 
         // 输入合法性验证
-        if (StringUtils.isBlank(username)) {
+        if (StringUtils.isBlank(username) && StringUtils.isBlank(userPhone)) {
             response.put("code", HttpStatus.BAD_REQUEST.value());
-            response.put("message", "用户名不能为空");
+            response.put("message", "用户名或电话号码不能为空");
             return response;
         }
         if (StringUtils.isBlank(password)) {
@@ -100,21 +99,37 @@ public class UserServiceImpl implements UserService {
         }
 
         try {
-            User user = userRepository.findByUsername(username);
+            User user = null;
 
-            if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-                // 登录成功，生成 token
-                StpUtil.login(user.getUserID()); // 使用 Sa-Token 的 login 方法
+            // 根据输入查询用户
+            if (StringUtils.isNotBlank(username)) {
+                user = userRepository.findByUsername(username);
+            }
+            if (user == null && StringUtils.isNotBlank(userPhone)) {
+                user = userRepository.findByUserPhone(userPhone);
+            }
 
-                response.put("code", HttpStatus.OK.value());
-                response.put("message", "登录成功");
-                response.put("token", StpUtil.getTokenValue()); // 返回生成的 token
-                return response;
-            } else {
+            // 如果用户未找到
+            if (user == null) {
                 response.put("code", HttpStatus.BAD_REQUEST.value());
-                response.put("message", "用户名或密码错误,登录失败");
+                response.put("message", "用户不存在");
                 return response;
             }
+
+            // 验证密码
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                response.put("code", HttpStatus.BAD_REQUEST.value());
+                response.put("message", "密码错误");
+                return response;
+            }
+
+            // 登录成功，使用 Sa-Token 生成 Token
+            StpUtil.login(user.getUserID());
+
+            response.put("code", HttpStatus.OK.value());
+            response.put("message", "登录成功");
+            response.put("token", StpUtil.getTokenValue());
+            return response;
 
         } catch (Exception e) {
             response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -122,4 +137,5 @@ public class UserServiceImpl implements UserService {
             return response;
         }
     }
+
 }

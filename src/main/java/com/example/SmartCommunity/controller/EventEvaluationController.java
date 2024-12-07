@@ -26,7 +26,8 @@ public class EventEvaluationController {
         Map<String, Object> response = new HashMap<>();
         try {
             // 调用 service 层完成评价操作
-            EventEvaluation eventEvaluation = eventEvaluationService.evaluateEvent(evaluatorId, description, score, content);
+            EventEvaluation eventEvaluation = eventEvaluationService.evaluateEvent(evaluatorId, description, score,
+                    content);
 
             // 返回成功响应
             response.put("code", 200);
@@ -50,4 +51,3 @@ public class EventEvaluationController {
         }
     }
 }
-

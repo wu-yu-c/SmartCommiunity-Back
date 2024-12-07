@@ -17,16 +17,16 @@ public class AdminController {
     @Operation(summary = "管理员注册接口")
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(
-            @RequestParam String adminName, @RequestParam String password, @RequestParam String adminPhone) {
-        Map<String, Object> result = adminService.register(adminName, password, adminPhone);
+            @RequestParam String adminName, @RequestParam String adminPhone, @RequestParam String password) {
+        Map<String, Object> result = adminService.register(adminName, adminPhone, password);
         return ResponseEntity.status((Integer) result.get("code")).body(result);
     }
 
     @Operation(summary = "管理员登录接口")
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(
-            @RequestParam String adminPhone, @RequestParam String password) {
-        Map<String, Object> result = adminService.login(adminPhone, password);
+    public ResponseEntity<Map<String, Object>> login(@RequestParam(required = false) String adminName,
+            @RequestParam(required = false) String adminPhone, @RequestParam String password) {
+        Map<String, Object> result = adminService.login(adminName, adminPhone, password);
         return ResponseEntity.status((Integer) result.get("code")).body(result);
     }
 }
