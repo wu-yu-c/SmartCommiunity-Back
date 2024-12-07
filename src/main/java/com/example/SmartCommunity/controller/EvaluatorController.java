@@ -54,7 +54,7 @@ public class EvaluatorController {
                             evaluator.getName(),
                             evaluator.getPosition(),
                             evaluator.getAvatar()))
-                    .collect(Collectors.toList());
+                    .toList();
 
             // 返回的响应包含查询结果数量和结果列表
             return ResponseEntity.ok(Map.of(

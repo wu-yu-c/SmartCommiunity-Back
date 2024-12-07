@@ -36,9 +36,6 @@ public class Evaluator {
     @Column(name = "AverageRating", precision = 3, scale = 2)
     private BigDecimal averageRating;
 
-    @Column(name = "CreatedTime", insertable = false, updatable = false)
-    private Timestamp createdTime;
-
     // 外键关联 ManagementArea 表
     @ManyToOne
     @JoinColumn(name = "AreaID", referencedColumnName = "AreaID", nullable = true)
