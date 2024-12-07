@@ -7,7 +7,6 @@ import com.example.SmartCommunity.repository.UserMessageRepository;
 import com.example.SmartCommunity.service.AiAssistantService;
 import com.example.SmartCommunity.util.AiResponseGenerator;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
