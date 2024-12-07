@@ -16,10 +16,11 @@ public class EventEvaluation {
     @Column(name = "EventID")
     private Integer EventID; // 主键：事件ID，类型为 int
 
+    @Setter
     @Getter
     @ManyToOne
     @JoinColumn(name = "EvaluatorID", referencedColumnName = "EvaluatorID")
-    private Evaluator EvaluatorID; // 外键：EvaluatorID，引用 Evaluator 表的 EvaluatorID
+    private Evaluator evaluator; // 外键：EvaluatorID，引用 Evaluator 表的 EvaluatorID
 
     @Setter
     @Column(name = "Description", columnDefinition = "TEXT", nullable = false)
@@ -41,7 +42,4 @@ public class EventEvaluation {
         this.CreatedTime = Timestamp.valueOf(now);
     }
 
-    public void setEvaluator(Evaluator evaluator) {
-        this.EvaluatorID = evaluator;
-    }
 }

@@ -6,7 +6,10 @@ import com.example.SmartCommunity.repository.EvaluatorRepository;
 import com.example.SmartCommunity.repository.EventEvaluationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class EventEvaluationService {
@@ -35,6 +38,25 @@ public class EventEvaluationService {
         eventEvaluation.setCreatedTime(LocalDateTime.now()); // 设置评价时间为当前时间
 
         // 保存到数据库
-        return eventEvaluationRepository.save(eventEvaluation);
+        eventEvaluationRepository.save(eventEvaluation);
+        //更新Evaluator表的平均分
+        updateAverageRating(evaluatorId);
+
+        return eventEvaluation;
+    }
+
+    private void updateAverageRating(Long evaluatorId) {
+        // 计算新评分的平均值
+        BigDecimal averageRating = eventEvaluationRepository.calculateAverageScoreByEvaluatorId(evaluatorId);
+
+        // 更新 Evaluator 表
+        Optional<Evaluator> optionalEvaluator = evaluatorRepository.findById(evaluatorId);
+        if (optionalEvaluator.isPresent()) {
+            Evaluator evaluator = optionalEvaluator.get();
+            evaluator.setAverageRating(averageRating);
+            evaluatorRepository.save(evaluator);
+        } else {
+            throw new IllegalArgumentException("Evaluator not found for ID: " + evaluatorId);
+        }
     }
 }
