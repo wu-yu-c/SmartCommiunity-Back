@@ -11,7 +11,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "RepairIssue", schema = "testdb")
+@Table(name = "RepairIssue", schema = "smart_community")
 public class RepairIssue {
     @Id
     @Column(name = "RepairIssueID", nullable = false)

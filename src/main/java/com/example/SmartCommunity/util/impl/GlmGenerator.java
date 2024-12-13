@@ -15,7 +15,7 @@ import java.util.List;
 public class GlmGenerator implements AiResponseGenerator {
     @Override
     public ChatMessage generateResponse(String message) {
-        return doSyncStableRequest("Hello", message);
+        return doSyncStableRequest("你是一个社区工作人员，请你为用户提供热心的服务。", message);
     }
 
     @Resource
@@ -63,11 +63,7 @@ public class GlmGenerator implements AiResponseGenerator {
      */
     public ChatMessage doRequest(String systemMessage, String userMessage, Boolean stream, Float temperature) {
         // 构造请求
-        List<ChatMessage> aiChatMessages = new ArrayList<>();
-        ChatMessage systemChatMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), systemMessage);
-        ChatMessage userChatMessage = new ChatMessage(ChatMessageRole.USER.value(), userMessage);
-        aiChatMessages.add(systemChatMessage);
-        aiChatMessages.add(userChatMessage);
+        var aiChatMessages = generateChatMessage(systemMessage, userMessage);
         return doRequest(aiChatMessages, stream, temperature);
     }
 
@@ -133,18 +129,16 @@ public class GlmGenerator implements AiResponseGenerator {
      * @return AI响应信息(流式)
      */
     public Flowable<ModelData> doStreamRequest(String systemMessage, String userMessage, Float temperature) {
+        List<ChatMessage> aiChatMessages = generateChatMessage(systemMessage, userMessage);
+        return doStreamRequest(aiChatMessages, temperature);
+    }
+
+    private List<ChatMessage> generateChatMessage(String systemMessage, String userMessage) {
         List<ChatMessage> aiChatMessages = new ArrayList<>();
         ChatMessage systemChatMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), systemMessage);
         ChatMessage userChatMessage = new ChatMessage(ChatMessageRole.USER.value(), userMessage);
         aiChatMessages.add(systemChatMessage);
         aiChatMessages.add(userChatMessage);
-        return doStreamRequest(aiChatMessages, temperature);
+        return aiChatMessages;
     }
-
-
-    public static void main(String[] args) {
-        GlmGenerator glmGenerator = new GlmGenerator();
-        System.out.println(glmGenerator.generateResponse("Hello"));
-    }
-
 }
