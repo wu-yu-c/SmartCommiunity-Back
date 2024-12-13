@@ -56,7 +56,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         userMessageRepository.save(userMessage);
 
         // Step 3: 调用 AI 服务生成 AI 回复
-        String aiReplyContent = (String) aiResponseGenerator.generateResponse(new ChatMessageDTO(userMessage)).getText();
+        String aiReplyContent = aiResponseGenerator.generateResponse(new ChatMessageDTO(userMessage)).getText();
 
         // Step 4: 创建并保存 AiMessage
         AiMessage aiMessage = new AiMessage();
