@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.util.impl;
 
+import com.example.SmartCommunity.dto.ChatMessageDTO;
 import com.example.SmartCommunity.util.AiResponseGenerator;
 import com.zhipu.oapi.ClientV4;
 import com.zhipu.oapi.Constants;
@@ -14,8 +15,13 @@ import java.util.List;
 @Component
 public class GlmGenerator implements AiResponseGenerator {
     @Override
-    public ChatMessage generateResponse(String message) {
-        return doSyncStableRequest("你是一个社区工作人员，请你为用户提供热心的服务。", message);
+    public ChatMessageDTO generateResponse(ChatMessageDTO message) {
+        String realMessage = message.getText();
+        ChatMessage aiResult = doSyncStableRequest("你是一个社区工作人员，请你为用户提供热心的服务。", realMessage);
+        ChatMessageDTO dtoResult = new ChatMessageDTO();
+        dtoResult.setRole(aiResult.getRole());
+        dtoResult.setText((String) aiResult.getContent());
+        return dtoResult;
     }
 
     @Resource
