@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.util.impl;
 
+import com.example.SmartCommunity.dto.ChatMessageDTO;
 import com.example.SmartCommunity.util.AiResponseGenerator;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import org.springframework.stereotype.Component;
@@ -18,9 +19,9 @@ public class RandomResponseGenerator implements AiResponseGenerator {
     };
 
     @Override
-    public ChatMessage generateResponse(String message) {
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setContent(GREETINGS[new Random().nextInt(GREETINGS.length)]);
+    public ChatMessageDTO generateResponse(ChatMessageDTO m) {
+        ChatMessageDTO chatMessage = new ChatMessageDTO();
+        chatMessage.setText(GREETINGS[new Random().nextInt(GREETINGS.length)]);
         return chatMessage;
     }
 }

@@ -1,7 +1,7 @@
 package com.example.SmartCommunity.util;
 
-import com.zhipu.oapi.service.v4.model.ChatMessage;
+import com.example.SmartCommunity.dto.ChatMessageDTO;
 
 public interface AiResponseGenerator {
-    ChatMessage generateResponse(String message);
+    ChatMessageDTO generateResponse(ChatMessageDTO message);
 }
