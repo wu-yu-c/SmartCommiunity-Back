@@ -1,6 +1,8 @@
 package com.example.SmartCommunity.service.impl;
 
+import com.example.SmartCommunity.controller.AiAssistantController;
 import com.example.SmartCommunity.dto.ChatMessageDTO;
+import com.example.SmartCommunity.dto.UserMessageDTO;
 import com.example.SmartCommunity.model.AiMessage;
 import com.example.SmartCommunity.model.ChatTopic;
 import com.example.SmartCommunity.model.User;
@@ -16,6 +18,11 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
@@ -29,15 +36,20 @@ public class AiAssistantServiceImpl implements AiAssistantService {
     private final AiMessageRepository aiMessageRepository;
     private final ChatTopicRepository chatTopicRepository;
     private final UserRepository userRepository;
+    private final PagedResourcesAssembler<UserMessageDTO> pagedResourcesAssembler;
 
     public AiAssistantServiceImpl(@Qualifier("qwen2Generator") AiResponseGenerator aiResponseGenerator,
                                   UserMessageRepository userMessageRepository,
-                                  AiMessageRepository aiMessageRepository, ChatTopicRepository chatTopicRepository, UserRepository userRepository) {
+                                  AiMessageRepository aiMessageRepository,
+                                  ChatTopicRepository chatTopicRepository,
+                                  UserRepository userRepository,
+                                  PagedResourcesAssembler<UserMessageDTO> pagedResourcesAssembler) {
         this.aiResponseGenerator = aiResponseGenerator;
         this.userMessageRepository = userMessageRepository;
         this.aiMessageRepository = aiMessageRepository;
         this.chatTopicRepository = chatTopicRepository;
         this.userRepository = userRepository;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
     }
 
     @Transactional
@@ -72,11 +84,29 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         return aiReplyContent;
     }
 
-    @Override
-    public Page<UserMessage> getMessagesByTopicId(@NotNull Long topicId, @NotNull Integer offset, @NotNull Integer limit) {
+    private Page<UserMessage> getMessagesByTopicId(@NotNull Long topicId,
+                                                   @NotNull Integer offset, @NotNull Integer limit) {
         ChatTopic chatTopic = chatTopicRepository.getReferenceById(topicId);
-        Pageable pageable = PageRequest.of(offset / limit, limit);
+        Pageable pageable = PageRequest.of(offset / limit, limit,
+                                            Sort.by(Sort.Direction.DESC, "id"));
         return userMessageRepository.findByTopicID(chatTopic, pageable);
+    }
+
+    @Override
+    public PagedModel<EntityModel<UserMessageDTO>> getMessagesByTopicIdPaged(@NotNull Long topicId,
+                                                                        @NotNull Integer offset,
+                                                                        @NotNull Integer limit) {
+        // 获取分页消息
+        Page<UserMessage> messages = getMessagesByTopicId(topicId, offset, limit);
+
+        // 转换为 DTO
+        Page<UserMessageDTO> messageDTOs = messages.map(UserMessageDTO::new);
+
+        // 使用 PagedResourcesAssembler 封装为 PagedModel
+        return pagedResourcesAssembler.toModel(
+                messageDTOs,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(AiAssistantController.class)
+                        .getMessagesByTopicId(topicId, offset, limit)).withSelfRel());
     }
 
     @Override
@@ -96,6 +126,13 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         ChatTopic chatTopic = new ChatTopic();
         chatTopic.setUserID(userRepository.getReferenceById(userId));
         chatTopic.setTopicName(topicName);
+        chatTopicRepository.save(chatTopic);
+    }
+
+    @Override
+    public void updateTopicName(@NotNull Long topicId, @NotNull String newTopicName) {
+        ChatTopic chatTopic = chatTopicRepository.getReferenceById(topicId);
+        chatTopic.setTopicName(newTopicName);
         chatTopicRepository.save(chatTopic);
     }
 }

@@ -52,24 +52,18 @@ public class AiAssistantController {
     public ResponseEntity<PagedModel<EntityModel<UserMessageDTO>>> getMessagesByTopicId(
             @PathVariable Long topicId,
             @RequestParam @NotNull Integer offset,
-            @RequestParam @NotNull Integer limit,
-            PagedResourcesAssembler<UserMessageDTO> pagedResourcesAssembler) {
+            @RequestParam @NotNull Integer limit) {
         try {
-            Page<UserMessage> messages = aiAssistantService.getMessagesByTopicId(topicId, offset, limit);
-
-            // 转换为 DTO
-            Page<UserMessageDTO> messageDTOs = messages.map(UserMessageDTO::new);
-
-            // 使用 PagedResourcesAssembler 生成稳定的 JSON 结构
-            PagedModel<EntityModel<UserMessageDTO>> pagedModel = pagedResourcesAssembler.toModel(messageDTOs,
-                    WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(AiAssistantController.class)
-                            .getMessagesByTopicId(topicId, offset, limit, pagedResourcesAssembler)).withSelfRel());
-
+            // 调用 Service 获取封装好的 PagedModel
+            PagedModel<EntityModel<UserMessageDTO>> pagedModel =
+                    aiAssistantService.getMessagesByTopicIdPaged(topicId, offset, limit);
             return ResponseEntity.ok(pagedModel);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 
     @GetMapping("/topics/{userId}")
     public ResponseEntity<List<ChatTopic>> getTopicsByUserId(@PathVariable Long userId) {
@@ -100,6 +94,18 @@ public class AiAssistantController {
             return ResponseEntity.ok("Topic created successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating topic: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/topic/{topicId}")
+    public ResponseEntity<String> updateTopicName(
+            @PathVariable Long topicId,
+            @RequestParam @NotNull String newTopicName) {
+        try {
+            aiAssistantService.updateTopicName(topicId, newTopicName);
+            return ResponseEntity.ok("Topic updated successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating topic: " + e.getMessage());
         }
     }
 }
