@@ -1,9 +1,14 @@
 package com.example.SmartCommunity.controller;
 
-import com.example.SmartCommunity.model.RepairIssue;
+import com.example.SmartCommunity.dto.RepairIssueDTO;
+import com.example.SmartCommunity.dto.RepairIssueResponse;
+import com.example.SmartCommunity.model.Repairissue;
 import com.example.SmartCommunity.service.RepairIssueService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,22 +20,47 @@ public class RepairIssueController {
     private RepairIssueService repairIssueService;
 
     @GetMapping
-    public List<RepairIssue> getAllRepairIssues() {
+    public List<Repairissue> getAllRepairIssues() {
         return repairIssueService.findAll();
     }
 
+    // 不返回文件数据的接口（原有接口）
     @GetMapping("/{id}")
-    public RepairIssue getRepairIssueById(@PathVariable Integer id) {
+    public Repairissue getRepairIssueById(@PathVariable Integer id) {
         return repairIssueService.findById(id);
     }
 
-    @PostMapping
-    public RepairIssue createRepairIssue(@RequestBody RepairIssue repairIssue) {
+    // 返回文件数据的接口（新接口）
+    @GetMapping("/{id}/with-files")
+    public ResponseEntity<RepairIssueResponse> getRepairIssueWithFiles(@PathVariable Integer id) {
+        try {
+            RepairIssueResponse response = repairIssueService.getRepairIssueWithFiles(id);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Repairissue createRepairIssue(@RequestBody Repairissue repairIssue) {
         return repairIssueService.save(repairIssue);
     }
 
+    @PostMapping(value = "/with-files", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE})
+    public ResponseEntity<Repairissue> createRepairIssueWithFiles(
+            @RequestPart("repairIssue") RepairIssueDTO repairIssueDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestPart(value = "video", required = false) MultipartFile video) {
+        try {
+            Repairissue created = repairIssueService.createRepairIssueWithFiles(repairIssueDTO, image, video);
+            return ResponseEntity.ok(created);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PutMapping("/{id}")
-    public RepairIssue updateRepairIssue(@PathVariable Integer id, @RequestBody RepairIssue repairIssue) {
+    public Repairissue updateRepairIssue(@PathVariable Integer id, @RequestBody Repairissue repairIssue) {
         repairIssue.setId(id);
         return repairIssueService.update(repairIssue);
     }
@@ -40,13 +70,3 @@ public class RepairIssueController {
         repairIssueService.deleteById(id);
     }
 }
-
-//GET /api/repair-issues：获取所有维修问题。
-//
-//GET /api/repair-issues/{id}：根据 ID 获取指定维修问题。
-//
-//POST /api/repair-issues：创建新的维修问题。
-//
-//PUT /api/repair-issues/{id}：更新指定 ID 的维修问题。
-//
-//DELETE /api/repair-issues/{id}：删除指定 ID 的维修问题。

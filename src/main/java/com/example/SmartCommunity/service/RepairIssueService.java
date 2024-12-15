@@ -1,35 +1,24 @@
 package com.example.SmartCommunity.service;
 
-import com.example.SmartCommunity.model.RepairIssue;
-import com.example.SmartCommunity.repository.RepairIssueRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.example.SmartCommunity.dto.RepairIssueDTO;
+import com.example.SmartCommunity.dto.RepairIssueResponse;
+import com.example.SmartCommunity.model.Repairissue;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Service
-public class RepairIssueService {
+public interface RepairIssueService {
+    // 实现原有的CRUD方法
+    List<Repairissue> findAll();
 
-    @Autowired
-    private RepairIssueRepository repairIssueRepository;
+    Repairissue findById(Integer id);
 
-    public List<RepairIssue> findAll() {
-        return repairIssueRepository.findAll();
-    }
+    Repairissue save(Repairissue repairIssue);
 
-    public RepairIssue findById(Integer id) {
-        return repairIssueRepository.findById(id).orElse(null);
-    }
+    Repairissue update(Repairissue repairIssue);
 
-    public RepairIssue save(RepairIssue repairIssue) {
-        return repairIssueRepository.save(repairIssue);
-    }
+    void deleteById(Integer id);
 
-    public RepairIssue update(RepairIssue repairIssue) {
-        return repairIssueRepository.save(repairIssue);
-    }
-
-    public void deleteById(Integer id) {
-        repairIssueRepository.deleteById(id);
-    }
+    Repairissue createRepairIssueWithFiles(RepairIssueDTO dto, MultipartFile imageFile, MultipartFile videoFile);
+    RepairIssueResponse getRepairIssueWithFiles(Integer id);
 }
