@@ -11,14 +11,16 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "RepairIssue", schema = "smart_community")
-public class RepairIssue {
+@Table(name = "repairissue", schema = "smart_community")
+public class Repairissue {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "RepairIssueID", nullable = false)
     private Integer id;
 
-    @Column(name = "ResidentID")
-    private Integer residentID;
+    @NotNull
+    @Column(name = "ResidentID", nullable = false)
+    private Long residentID;
 
     @NotNull
     @Lob
@@ -48,5 +50,11 @@ public class RepairIssue {
     @NotNull
     @Column(name = "RepairIssueCategory", nullable = false, length = 128)
     private String repairIssueCategory;
+
+    @Column(name = "video_id")
+    private Integer videoId;
+
+    @Column(name = "image_id")
+    private Integer imageId;
 
 }

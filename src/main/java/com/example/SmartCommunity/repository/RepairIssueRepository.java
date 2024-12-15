@@ -1,10 +1,9 @@
 package com.example.SmartCommunity.repository;
 
-import com.example.SmartCommunity.model.RepairIssue;
+import com.example.SmartCommunity.model.Repairissue;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RepairIssueRepository extends JpaRepository<RepairIssue, Integer> {
-    // 其他自定义查询方法（如果需要）
+public interface RepairIssueRepository extends JpaRepository<Repairissue, Integer> {
 }
