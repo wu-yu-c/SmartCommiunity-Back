@@ -19,8 +19,14 @@ public class EventEvaluation {
     @Setter
     @Getter
     @ManyToOne
-    @JoinColumn(name = "EvaluatorID", referencedColumnName = "EvaluatorID")
-    private Evaluator evaluator; // 外键：EvaluatorID，引用 Evaluator 表的 EvaluatorID
+    @JoinColumn(name = "EvaluatorID", referencedColumnName = "UserID")
+    private User user; // 外键：EvaluatorID，引用 User 表的 UserID
+
+    @Setter
+    @Getter
+    @ManyToOne
+    @JoinColumn(name = "WorkerID", referencedColumnName = "StaffID")
+    private Staff staff; // 外键：WorkerID，引用 Staff 表的 StaffID
 
     @Setter
     @Column(name = "Description", columnDefinition = "TEXT", nullable = false)
@@ -41,5 +47,4 @@ public class EventEvaluation {
     public void setCreatedTime(LocalDateTime now) {
         this.CreatedTime = Timestamp.valueOf(now);
     }
-
 }

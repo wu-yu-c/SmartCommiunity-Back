@@ -1,9 +1,11 @@
 package com.example.SmartCommunity.service;
 
-import com.example.SmartCommunity.model.Evaluator;
+import com.example.SmartCommunity.model.Staff;
 import com.example.SmartCommunity.model.EventEvaluation;
-import com.example.SmartCommunity.repository.EvaluatorRepository;
+import com.example.SmartCommunity.model.User;
+import com.example.SmartCommunity.repository.StaffRepository;
 import com.example.SmartCommunity.repository.EventEvaluationRepository;
+import com.example.SmartCommunity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,21 +19,26 @@ public class EventEvaluationService {
     @Autowired
     private EventEvaluationRepository eventEvaluationRepository;
     @Autowired
-    private EvaluatorRepository evaluatorRepository;
-    public EventEvaluation evaluateEvent(Long evaluatorId, String description, Integer score, String content) {
+    private StaffRepository staffRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+    public EventEvaluation evaluateEvent(Long evaluatorId,Long staffId, String description, Integer score, String content) {
         // 验证 score 是否在 1 到 5 之间
         if (score < 1 || score > 5) {
             throw new IllegalArgumentException("Score must be between 1 and 5.");
         }
         // 查找对应的 Evaluator 实体类
-        Evaluator evaluator = evaluatorRepository.findById(evaluatorId)
-                .orElseThrow(() -> new RuntimeException("Evaluator not found"));
-
+        Staff staff = staffRepository.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Staff not found"));
+        User evaluator=userRepository.findById(evaluatorId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         // 创建 EventEvaluation 实体类
         EventEvaluation eventEvaluation = new EventEvaluation();
 
         // 设置 Evaluator 实体（通过查找到的 Evaluator 对象）
-        eventEvaluation.setEvaluator(evaluator);
+        eventEvaluation.setStaff(staff);
+        eventEvaluation.setUser(evaluator);
         eventEvaluation.setDescription(description); // 设置事件描述
         eventEvaluation.setScore(score); // 设置评分
         eventEvaluation.setContent(content); // 设置评价内容
@@ -39,24 +46,24 @@ public class EventEvaluationService {
 
         // 保存到数据库
         eventEvaluationRepository.save(eventEvaluation);
-        //更新Evaluator表的平均分
-        updateAverageRating(evaluatorId);
+        //更新Staff表的平均分
+        updateAverageRating(staffId);
 
         return eventEvaluation;
     }
 
-    private void updateAverageRating(Long evaluatorId) {
+    private void updateAverageRating(Long staffId) {
         // 计算新评分的平均值
-        BigDecimal averageRating = eventEvaluationRepository.calculateAverageScoreByEvaluatorId(evaluatorId);
+        BigDecimal averageRating = eventEvaluationRepository.calculateAverageScoreByStaffId(staffId);
 
-        // 更新 Evaluator 表
-        Optional<Evaluator> optionalEvaluator = evaluatorRepository.findById(evaluatorId);
+        // 更新 Staff 表
+        Optional<Staff> optionalEvaluator = staffRepository.findById(staffId);
         if (optionalEvaluator.isPresent()) {
-            Evaluator evaluator = optionalEvaluator.get();
-            evaluator.setAverageRating(averageRating);
-            evaluatorRepository.save(evaluator);
+            Staff staff = optionalEvaluator.get();
+            staff.setAverageRating(averageRating);
+            staffRepository.save(staff);
         } else {
-            throw new IllegalArgumentException("Evaluator not found for ID: " + evaluatorId);
+            throw new IllegalArgumentException("Evaluator not found for ID: " + staffId);
         }
     }
 }
