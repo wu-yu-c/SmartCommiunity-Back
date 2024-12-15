@@ -4,6 +4,7 @@ import com.example.SmartCommunity.dto.RepairIssueDTO;
 import com.example.SmartCommunity.dto.RepairIssueResponse;
 import com.example.SmartCommunity.model.Repairissue;
 import com.example.SmartCommunity.service.RepairIssueService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name="报修接口")
 @RestController
 @RequestMapping("/api/repair-issues")
 public class RepairIssueController {

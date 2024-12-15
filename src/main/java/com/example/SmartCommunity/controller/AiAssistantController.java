@@ -5,6 +5,7 @@ import com.example.SmartCommunity.dto.UserMessageRequestDTO;
 import com.example.SmartCommunity.model.ChatTopic;
 import com.example.SmartCommunity.model.UserMessage;
 import com.example.SmartCommunity.service.AiAssistantService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,7 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 
 import java.util.List;
 
-
+@Tag(name="AI助手接口")
 @RestController
 @RequestMapping("/api/ai-assistant")
 public class AiAssistantController {
