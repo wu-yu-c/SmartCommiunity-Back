@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -12,39 +13,32 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Set;
-import java.util.TreeSet;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "UserMessage")
-public class UserMessage {
+@Table(name = "ChatTopic")
+public class ChatTopic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MessageID", nullable = false)
+    @Column(name = "TopicID", nullable = false)
     private Long id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "TopicID", nullable = false)
-    private ChatTopic topicID;
-
-    @Lob
-    @Column(name = "ContentText")
-    private String contentText;
+    @JoinColumn(name = "UserID", nullable = false)
+    @JsonIgnore
+    private User userID;
 
     @Size(max = 255)
-    @Column(name = "ContentImage")
-    private String contentImage;
+    @NotNull
+    @Column(name = "TopicName", nullable = false)
+    private String topicName;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "CreateTime")
     private Instant createTime;
-
-    @OneToMany(mappedBy = "userMessage")
-    private Set<AiMessage> aiMessages = new TreeSet<>();
 
     @PrePersist
     public void prePersist() {
