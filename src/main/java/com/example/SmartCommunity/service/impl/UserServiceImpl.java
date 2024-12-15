@@ -58,7 +58,11 @@ public class UserServiceImpl implements UserService {
                 response.put("message", "用户名已存在");
                 return response;
             }
-
+            if (userRepository.findByUserPhone(userPhone) != null) {
+                response.put("code", HttpStatus.BAD_REQUEST.value());
+                response.put("message", "该手机号已被注册");
+                return response;
+            }
             // 创建新用户并加密密码
             User user = new User();
             user.setUsername(username);

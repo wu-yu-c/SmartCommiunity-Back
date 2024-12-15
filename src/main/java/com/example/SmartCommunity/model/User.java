@@ -27,7 +27,7 @@ public class User {
     @Column(name = "Password", nullable = false)
     private String password;
 
-    @Column(name = "UserPhone")
+    @Column(name = "UserPhone", unique = true)
     private String userPhone;
 
     @Column(name = "CreatedTime", insertable = false, updatable = false)
