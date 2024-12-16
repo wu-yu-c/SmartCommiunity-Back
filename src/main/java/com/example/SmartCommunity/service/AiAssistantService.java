@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public interface AiAssistantService {
     @Transactional
-    String getAiResponse(Long topicId, String userMessageContent, String userImageContent);
+    String getAiResponse(Long topicId, String userMessageContent, String userImageContent) throws Exception;
 
     PagedModel<EntityModel<UserMessageDTO>> getMessagesByTopicIdPaged(@NotNull Long topicId,
                                                                  @NotNull Integer offset,
