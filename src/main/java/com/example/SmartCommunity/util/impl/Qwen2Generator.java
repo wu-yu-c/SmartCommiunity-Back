@@ -19,109 +19,98 @@ public class Qwen2Generator implements AiResponseGenerator {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public ChatMessageDTO generateResponse(ChatMessageDTO message) {
-        try {
-            // 创建请求的URL
-            URL url = new URL("http://localhost:5000/v1/chat/completions");
+    public ChatMessageDTO generateResponse(ChatMessageDTO message) throws Exception {
+        // 创建请求的URL
+        URL url = new URL("http://localhost:5000/v1/chat/completions");
 
-            // 建立HTTP连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
+        // 建立HTTP连接
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
 
-            // 构建请求体
-            String requestBody = buildRequestBody(message);
-            try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = requestBody.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
+        // 构建请求体
+        String requestBody = buildRequestBody(message);
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = requestBody.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
 
-            // 发送请求并获取响应
-            int statusCode = connection.getResponseCode();
-            if (statusCode != 200) {
-                InputStream errorStream = connection.getErrorStream();
-                if (errorStream != null) {
-                    try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream))) {
-                        StringBuilder errorResponse = new StringBuilder();
-                        String line;
-                        while ((line = br.readLine()) != null) {
-                            errorResponse.append(line);
-                        }
-                        System.err.println("API Error Response: " + errorResponse);
+        // 发送请求并获取响应
+        int statusCode = connection.getResponseCode();
+        if (statusCode != 200) {
+            InputStream errorStream = connection.getErrorStream();
+            if (errorStream != null) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream))) {
+                    StringBuilder errorResponse = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        errorResponse.append(line);
                     }
+                    System.err.println("API Error Response: " + errorResponse);
                 }
-                throw new RuntimeException("HTTP request failed with status code: " + statusCode);
+            }
+            throw new RuntimeException("HTTP request failed with status code: " + statusCode);
+        }
+
+        // 读取响应
+        try (InputStreamReader in = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
+             BufferedReader br = new BufferedReader(in)) {
+            StringBuilder responseBuilder = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                responseBuilder.append(line);
             }
 
-            // 读取响应
-            try (InputStreamReader in = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
-                 BufferedReader br = new BufferedReader(in)) {
-                StringBuilder responseBuilder = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    responseBuilder.append(line);
-                }
-
-                // 解析JSON响应
-                String responseJson = responseBuilder.toString();
-                return parseResponse(responseJson);
-
-            }
-
-        } catch (Exception e) {
-            System.err.println("Failed to communicate with the API: " + e.getMessage());
-            return new ChatMessageDTO("error", "Failed to communicate with the API", null);
+            // 解析JSON响应
+            String responseJson = responseBuilder.toString();
+            return parseResponse(responseJson);
         }
     }
 
-    private String buildRequestBody(ChatMessageDTO message) {
-        try {
-            // 创建 JSON 对象
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode root = mapper.createObjectNode();
-            root.put("model", "Qwen2-VL-2B-Instruct");
+    private String buildRequestBody(ChatMessageDTO message) throws Exception {
+        // 创建 JSON 对象
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode root = mapper.createObjectNode();
+        root.put("model", "Qwen2-VL-2B-Instruct");
 
-            ArrayNode messages = mapper.createArrayNode();
+        ArrayNode messages = mapper.createArrayNode();
 
-            // 添加系统角色
-            ObjectNode systemMessage = mapper.createObjectNode();
-            systemMessage.put("role", "system");
-            systemMessage.put("content", "你是一个社区工作人员，请你为用户提供热心的服务。");
-            messages.add(systemMessage);
+        // 添加系统角色
+        ObjectNode systemMessage = mapper.createObjectNode();
+        systemMessage.put("role", "system");
+        systemMessage.put("content", "你是一个社区工作人员，请你为用户提供热心的服务。");
+        messages.add(systemMessage);
 
-            // 添加用户角色
-            ObjectNode userMessage = mapper.createObjectNode();
-            userMessage.put("role", "user");
+        // 添加用户角色
+        ObjectNode userMessage = mapper.createObjectNode();
+        userMessage.put("role", "user");
 
-            ArrayNode userContent = mapper.createArrayNode();
-            if (message.getImage_url() != null) {
-                ObjectNode imageContent = mapper.createObjectNode();
-                imageContent.put("type", "image_url");
+        ArrayNode userContent = mapper.createArrayNode();
+        if (message.getImage_url() != null) {
+            ObjectNode imageContent = mapper.createObjectNode();
+            imageContent.put("type", "image_url");
 
-                ObjectNode imageUrl = mapper.createObjectNode();
-                imageUrl.put("url", message.getImage_url());
+            ObjectNode imageUrl = mapper.createObjectNode();
+            imageUrl.put("url", message.getImage_url());
 
-                imageContent.set("image_url", imageUrl);
-                userContent.add(imageContent);
-            }
-
-            if (message.getText() != null) {
-                ObjectNode textContent = mapper.createObjectNode();
-                textContent.put("type", "text");
-                textContent.put("text", message.getText());
-                userContent.add(textContent);
-            }
-
-            userMessage.set("content", userContent);
-            messages.add(userMessage);
-
-            root.set("messages", messages);
-
-            return mapper.writeValueAsString(root);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to build request body", e);
+            imageContent.set("image_url", imageUrl);
+            userContent.add(imageContent);
         }
+
+        if (message.getText() != null) {
+            ObjectNode textContent = mapper.createObjectNode();
+            textContent.put("type", "text");
+            textContent.put("text", message.getText());
+            userContent.add(textContent);
+        }
+
+        userMessage.set("content", userContent);
+        messages.add(userMessage);
+
+        root.set("messages", messages);
+
+        return mapper.writeValueAsString(root);
     }
 
     private ChatMessageDTO parseResponse(String responseJson) throws Exception {
@@ -135,10 +124,4 @@ public class Qwen2Generator implements AiResponseGenerator {
         return new ChatMessageDTO("assistant", null, assistantMessage);
     }
 
-    public static void main(String[] args) {
-        AiResponseGenerator generator = new Qwen2Generator();
-        ChatMessageDTO message = new ChatMessageDTO("user", null, "你好");
-        ChatMessageDTO response = generator.generateResponse(message);
-        System.out.println(response.getText());
-    }
 }
