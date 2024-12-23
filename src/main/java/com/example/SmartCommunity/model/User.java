@@ -33,6 +33,8 @@ public class User {
     @Column(name = "CreatedTime", insertable = false, updatable = false)
     private Timestamp createdTime;
 
+    @Column(name = "Avatar")
+    private Timestamp avatar;
     // Getters and Setters
     // Lombok 的 @Getter 和 @Setter 自动生成
 }

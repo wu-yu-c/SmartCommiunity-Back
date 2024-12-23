@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.controller;
 
+import com.example.SmartCommunity.dto.UserDTO;
 import com.example.SmartCommunity.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,7 +17,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Operation(summary = "用户注册接口",description = "用户通过用户名、手机号与密码注册，用户名与密码必须唯一")
+    @Operation(summary = "用户注册接口", description = "用户通过用户名、手机号与密码注册，用户名与密码必须唯一")
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(
             @RequestParam String username,
@@ -26,7 +27,7 @@ public class UserController {
         return ResponseEntity.status((Integer) result.get("code")).body(result);
     }
 
-    @Operation(summary = "用户登录接口",description = "支持通过用户名或手机号任意一种方式登录")
+    @Operation(summary = "用户登录接口", description = "支持通过用户名或手机号任意一种方式登录")
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
             @RequestParam(required = false) String username,
@@ -36,5 +37,21 @@ public class UserController {
         // 调用服务层进行用户登录，传入 username 或 userPhone 和密码
         Map<String, Object> result = userService.login(username, userPhone, password);
         return ResponseEntity.status((Integer) result.get("code")).body(result);
+    }
+
+    @Operation(summary = "获取个人信息接口", description = "返回该用户的有关信息")
+    @GetMapping("/getUserInfo/{userId}")
+    public ResponseEntity<Map<String, Object>> getUserInfo(@PathVariable Long userId) {
+        Map<String, Object> result = userService.getUserInfo(userId);
+        return ResponseEntity.status((Integer) result.get("code")).body(result);
+    }
+
+    @Operation(summary = "修改个人信息接口", description = "返回修改成功与否的结果")
+    @PutMapping("/updateUserInfo/{userId}")
+    public ResponseEntity<Map<String, Object>> updateUserInfo(
+            @PathVariable Long userId,
+            @RequestBody UserDTO userDTO) {
+        Map<String, Object> response = userService.updateUserInfo(userId, userDTO);
+        return ResponseEntity.status((Integer) response.get("code")).body(response);
     }
 }

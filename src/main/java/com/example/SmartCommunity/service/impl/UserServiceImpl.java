@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.service.impl;
 
+import com.example.SmartCommunity.dto.UserDTO;
 import com.example.SmartCommunity.model.User;
 import com.example.SmartCommunity.repository.UserRepository;
 import com.example.SmartCommunity.service.UserService;
@@ -10,8 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import cn.dev33.satoken.stp.StpUtil; // 导入 Sa-Token 的 StpUtil 类
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -142,4 +145,70 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    // 获取用户信息并转换为dto
+    @Override
+    public Map<String, Object> getUserInfo(Long userId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Optional<User> optionalUser = userRepository.findById(userId);
+            if (optionalUser.isEmpty()) {
+                response.put("code", HttpStatus.NOT_FOUND.value());
+                response.put("message", "用户不存在");
+                return response;
+            } else {
+                User user = optionalUser.get();
+                response.put("code", HttpStatus.OK.value());
+                response.put("data", new UserDTO(user.getUserID(), user.getUsername(), user.getUserPhone()));
+                return response;
+            }
+        }catch (Exception e) {
+            response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "发生未知错误，请稍后再试");
+            return response;
+        }
+    }
+
+    @Override
+    public Map<String, Object> updateUserInfo(Long userId, UserDTO userDTO) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // 查找用户
+            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+            Optional<User> repeatUser= Optional.ofNullable(userRepository.findByUsername(userDTO.getUserName()));
+            if(repeatUser.isPresent()){
+                response.put("code", HttpStatus.BAD_REQUEST.value());
+                response.put("message", "用户名已被使用");
+                return response;
+            }
+
+            Optional<User> repeatUser2 = Optional.ofNullable(userRepository.findByUserPhone(userDTO.getPhoneNumber()));
+            if(repeatUser2.isPresent()){
+                response.put("code", HttpStatus.BAD_REQUEST.value());
+                response.put("message", "该手机号已被使用");
+                return response;
+            }
+            // 更新字段
+            if (userDTO.getUserName() != null) {
+                user.setUsername(userDTO.getUserName());
+            }
+            if (userDTO.getPhoneNumber() != null) {
+                user.setUserPhone(userDTO.getPhoneNumber());
+            }
+
+            // 保存更新后的用户
+            userRepository.save(user);
+
+            response.put("code", HttpStatus.OK.value());
+            response.put("message", "用户信息修改成功");
+            return response;
+        } catch (RuntimeException e) {
+            response.put("code", HttpStatus.NOT_FOUND.value());
+            response.put("message", e.getMessage());
+            return response;
+        } catch (Exception e) {
+            response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "发生未知错误，请稍后再试");
+            return response;
+        }
+    }
 }
