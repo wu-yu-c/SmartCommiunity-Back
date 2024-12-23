@@ -54,7 +54,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
 
     @Transactional
     @Override
-    public String getAiResponse(Long topicId, String userMessageContent, String userImageContent) {
+    public String getAiResponse(Long topicId, String userMessageContent, String userImageContent) throws Exception {
         // Step 1: 检测 ChatTopic 是否存在
         if (!chatTopicRepository.existsById(topicId)) {
             throw new RuntimeException("ChatTopic not found");
