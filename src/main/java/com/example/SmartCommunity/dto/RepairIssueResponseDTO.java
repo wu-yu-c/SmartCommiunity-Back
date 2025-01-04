@@ -4,7 +4,7 @@ import lombok.Data;
 import java.time.Instant;
 
 @Data
-public class RepairIssueResponse {
+public class RepairIssueResponseDTO {
     private Integer id;
     private Long residentID;
     private String repairIssueDetails;

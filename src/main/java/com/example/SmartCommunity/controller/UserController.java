@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Map;
 
 @Tag(name = "用户接口")
@@ -52,6 +54,15 @@ public class UserController {
             @PathVariable Long userId,
             @RequestBody UserDTO userDTO) {
         Map<String, Object> response = userService.updateUserInfo(userId, userDTO);
+        return ResponseEntity.status((Integer) response.get("code")).body(response);
+    }
+
+    @Operation(summary="上传或修改用户头像接口",description = "通过用户ID上传头像，如果已有头像的话就修改头像")
+    @PutMapping(value = "/avatar/{userID}", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateAvatar(
+            @PathVariable("userID") Long userID,
+            @RequestParam("file") MultipartFile file) {
+        Map<String, Object> response = userService.userAvatar(userID,file);
         return ResponseEntity.status((Integer) response.get("code")).body(response);
     }
 }

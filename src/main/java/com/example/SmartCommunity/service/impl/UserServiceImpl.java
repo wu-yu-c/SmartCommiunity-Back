@@ -4,17 +4,21 @@ import com.example.SmartCommunity.dto.UserDTO;
 import com.example.SmartCommunity.model.User;
 import com.example.SmartCommunity.repository.UserRepository;
 import com.example.SmartCommunity.service.UserService;
+import com.example.SmartCommunity.util.OSSUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import cn.dev33.satoken.stp.StpUtil; // 导入 Sa-Token 的 StpUtil 类
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -135,6 +139,7 @@ public class UserServiceImpl implements UserService {
 
             response.put("code", HttpStatus.OK.value());
             response.put("message", "登录成功");
+            response.put("userID", user.getUserID());
             response.put("token", StpUtil.getTokenValue());
             return response;
 
@@ -158,10 +163,10 @@ public class UserServiceImpl implements UserService {
             } else {
                 User user = optionalUser.get();
                 response.put("code", HttpStatus.OK.value());
-                response.put("data", new UserDTO(user.getUserID(), user.getUsername(), user.getUserPhone()));
+                response.put("data", new UserDTO(user.getUserID(), user.getUsername(), user.getUserPhone(),user.getAvatar()));
                 return response;
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.put("message", "发生未知错误，请稍后再试");
             return response;
@@ -174,15 +179,16 @@ public class UserServiceImpl implements UserService {
         try {
             // 查找用户
             User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
-            Optional<User> repeatUser= Optional.ofNullable(userRepository.findByUsername(userDTO.getUserName()));
-            if(repeatUser.isPresent()){
+
+            Optional<User> repeatUser = Optional.ofNullable(userRepository.findByUsername(userDTO.getUserName()));
+            if (repeatUser.isPresent() && !repeatUser.get().getUserID().equals(userId)) {
                 response.put("code", HttpStatus.BAD_REQUEST.value());
                 response.put("message", "用户名已被使用");
                 return response;
             }
 
             Optional<User> repeatUser2 = Optional.ofNullable(userRepository.findByUserPhone(userDTO.getPhoneNumber()));
-            if(repeatUser2.isPresent()){
+            if (repeatUser2.isPresent() && !repeatUser2.get().getUserID().equals(userId)) {
                 response.put("code", HttpStatus.BAD_REQUEST.value());
                 response.put("message", "该手机号已被使用");
                 return response;
@@ -209,6 +215,50 @@ public class UserServiceImpl implements UserService {
             response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.put("message", "发生未知错误，请稍后再试");
             return response;
+        }
+    }
+
+    @Override
+    public Map<String, Object> userAvatar(Long userId, MultipartFile file) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // 1. 获取用户信息
+            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+
+            // 2. 处理旧头像
+            String oldAvatarUrl = user.getAvatar();
+            if (oldAvatarUrl != null) {
+                // 删除旧头像
+                String oldAvatarKey = oldAvatarUrl.replace("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/", "");
+                OSSUtils.deleteFile(oldAvatarKey);
+            }
+
+            // 3. 上传新头像
+            // 使用 UUID 生成唯一文件名
+            String originalFileName = file.getOriginalFilename();
+            String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+
+            String newAvatarUrl = OSSUtils.uploadFileToOSS(file, uniqueFileName);
+            if (newAvatarUrl.equals("failure")) {
+                result.put("code", HttpStatus.INTERNAL_SERVER_ERROR);
+                result.put("message", "Failed to upload new avatar");
+                return result;
+            }
+
+            // 4. 更新用户信息
+            String fileUrl = "https://first-tekcub.oss-cn-shanghai.aliyuncs.com/" + uniqueFileName;
+            user.setAvatar(fileUrl);
+            userRepository.save(user);
+            result.put("code", HttpStatus.OK.value());
+            result.put("message", "Avatar updated successfully");
+            result.put("avatar", fileUrl);
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("code", HttpStatus.INTERNAL_SERVER_ERROR);
+            result.put("message", e.getMessage());
+            return result;
         }
     }
 }

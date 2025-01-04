@@ -38,7 +38,7 @@ public class StaffController {
         }
     }
 
-    @Operation(summary = "根据人名和部门筛选评价人员",description = "从输入的人名和部门筛选符合条件的工作人员，返回人员列表")
+    @Operation(summary = "根据人名和部门筛选工作人员",description = "从输入的人名和部门筛选符合条件的工作人员，返回人员列表")
     @GetMapping("/searchStaff")
     public ResponseEntity<Map<String, Object>> searchEvaluators(
             @RequestParam(required = false) String name,

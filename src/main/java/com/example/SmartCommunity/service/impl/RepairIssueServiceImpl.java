@@ -1,7 +1,7 @@
 package com.example.SmartCommunity.service.impl;
 
 import com.example.SmartCommunity.dto.RepairIssueDTO;
-import com.example.SmartCommunity.dto.RepairIssueResponse;
+import com.example.SmartCommunity.dto.RepairIssueResponseDTO;
 import com.example.SmartCommunity.model.ImageFile;
 import com.example.SmartCommunity.model.VideoFile;
 import com.example.SmartCommunity.model.Repairissue;
@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -44,7 +45,16 @@ public class RepairIssueServiceImpl implements RepairIssueService {
     }
 
     @Override
-    public Repairissue save(Repairissue repairIssue) {
+    public Repairissue save(RepairIssueDTO repairIssueDTO) {
+        // 将 DTO 转换为实体
+        Repairissue repairIssue = new Repairissue();
+        repairIssue.setResidentID(repairIssueDTO.getResidentID());
+        repairIssue.setRepairIssueDetails(repairIssueDTO.getRepairIssueDetails());
+        repairIssue.setRepairIssueStatus(repairIssueDTO.getRepairIssueStatus());
+        repairIssue.setRepairIssueStart(repairIssueDTO.getRepairIssueStart());
+        repairIssue.setRepairAddress(repairIssueDTO.getRepairAddress());
+        repairIssue.setRepairIssueTitle(repairIssueDTO.getRepairIssueTitle());
+        repairIssue.setRepairIssueCategory(repairIssueDTO.getRepairIssueCategory());
         return repairIssueRepository.save(repairIssue);
     }
 
@@ -95,10 +105,10 @@ public class RepairIssueServiceImpl implements RepairIssueService {
     }
 
     @Override
-    public RepairIssueResponse getRepairIssueWithFiles(Integer id) {
+    public RepairIssueResponseDTO getRepairIssueWithFiles(Integer id) {
         Repairissue repairIssue = findById(id);
 
-        RepairIssueResponse response = new RepairIssueResponse();
+        RepairIssueResponseDTO response = new RepairIssueResponseDTO();
         BeanUtils.copyProperties(repairIssue, response);
 
         // 获取图片
@@ -120,5 +130,36 @@ public class RepairIssueServiceImpl implements RepairIssueService {
         }
 
         return response;
+    }
+
+    @Override
+    public List<RepairIssueResponseDTO> getRepairIssueByResidentId(Long residentId){
+        List<Repairissue> repairIssues = repairIssueRepository.findAllByResidentID(residentId);
+
+        List<RepairIssueResponseDTO> responses = new ArrayList<>();
+        for (Repairissue issue : repairIssues) {
+            RepairIssueResponseDTO response = new RepairIssueResponseDTO();
+
+            // 复制属性
+            BeanUtils.copyProperties(issue, response);
+
+            // 获取图片
+            if (issue.getImageId() != null) {
+                imageFileRepository.findById(issue.getImageId().longValue()).ifPresent(image -> {
+                    response.setImageData(image.getFileData());
+                });
+            }
+
+            // 获取视频
+            if (issue.getVideoId() != null) {
+                videoFileRepository.findById(issue.getVideoId().longValue()).ifPresent(video -> {
+                    response.setVideoData(video.getFileData());
+                });
+            }
+
+            responses.add(response);
+        }
+
+        return responses;
     }
 }

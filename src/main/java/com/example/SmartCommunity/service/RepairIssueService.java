@@ -1,7 +1,7 @@
 package com.example.SmartCommunity.service;
 
 import com.example.SmartCommunity.dto.RepairIssueDTO;
-import com.example.SmartCommunity.dto.RepairIssueResponse;
+import com.example.SmartCommunity.dto.RepairIssueResponseDTO;
 import com.example.SmartCommunity.model.Repairissue;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,12 +13,15 @@ public interface RepairIssueService {
 
     Repairissue findById(Integer id);
 
-    Repairissue save(Repairissue repairIssue);
+    Repairissue save(RepairIssueDTO repairIssue);
 
     Repairissue update(Repairissue repairIssue);
 
     void deleteById(Integer id);
 
     Repairissue createRepairIssueWithFiles(RepairIssueDTO dto, MultipartFile imageFile, MultipartFile videoFile);
-    RepairIssueResponse getRepairIssueWithFiles(Integer id);
+
+    RepairIssueResponseDTO getRepairIssueWithFiles(Integer id);
+
+    List<RepairIssueResponseDTO> getRepairIssueByResidentId(Long residentId);
 }

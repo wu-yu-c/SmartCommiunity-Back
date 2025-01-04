@@ -34,7 +34,7 @@ public class User {
     private Timestamp createdTime;
 
     @Column(name = "Avatar")
-    private Timestamp avatar;
+    private String avatar;
     // Getters and Setters
     // Lombok 的 @Getter 和 @Setter 自动生成
 }

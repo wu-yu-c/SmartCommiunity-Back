@@ -10,10 +10,13 @@ public class UserDTO {
     private Long userId;
     private String userName;
     private String phoneNumber;
-    public UserDTO(Long id, String username, String phone) {
+    private String avatar;
+
+    public UserDTO(Long id, String username, String phone, String avatar) {
         this.userId = id;
         this.userName = username;
         this.phoneNumber = phone;
+        this.avatar = avatar;
     }
 }
 

@@ -23,7 +23,7 @@ import java.util.List;
 @Tag(name="AI助手接口",description = """
         ChatTopic 指的是对话的主题，对应的是 ChatGPT 左侧的那一列(点击之后可以切换到不同对话的那个)
         一个 User 对应多个 ChatTopic，目前一对一即可
-        一个 ChatTopic 对应多个 UserMessage，一个 UserMessage 对应多个 AiMessage(考虑到用户可能点击重新生成，目前没做)""")
+        一个 ChatTopic 对应多个 UserMessage，一个 UserMessage 对应多个 AiMessage""")
 @RestController
 @RequestMapping("/api/ai-assistant")
 public class AiAssistantController {

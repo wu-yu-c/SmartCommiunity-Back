@@ -1,17 +1,20 @@
 package com.example.SmartCommunity.controller;
 
 import com.example.SmartCommunity.dto.RepairIssueDTO;
-import com.example.SmartCommunity.dto.RepairIssueResponse;
+import com.example.SmartCommunity.dto.RepairIssueResponseDTO;
 import com.example.SmartCommunity.model.Repairissue;
 import com.example.SmartCommunity.service.RepairIssueService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name="报修接口")
 @RestController
@@ -34,17 +37,32 @@ public class RepairIssueController {
 
     // 返回文件数据的接口（新接口）
     @GetMapping("/{id}/with-files")
-    public ResponseEntity<RepairIssueResponse> getRepairIssueWithFiles(@PathVariable Integer id) {
+    public ResponseEntity<RepairIssueResponseDTO> getRepairIssueWithFiles(@PathVariable Integer id) {
         try {
-            RepairIssueResponse response = repairIssueService.getRepairIssueWithFiles(id);
+            RepairIssueResponseDTO response = repairIssueService.getRepairIssueWithFiles(id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
     }
 
+    @Operation(summary = "通过居民ID查找报修事件",description = "参数为residentId，实际上是user表中的userId，返回报修事件中的所有字段")
+    @GetMapping("/getRepairIssue/{residentId}")
+    public ResponseEntity<?> getResidentById(@PathVariable("residentId") Long residentId) {
+        try{
+            List<RepairIssueResponseDTO> response = repairIssueService.getRepairIssueByResidentId(residentId);
+            if (response.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "No data found for residentId: " + residentId));
+            }
+            return ResponseEntity.ok(response);
+        }catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Repairissue createRepairIssue(@RequestBody Repairissue repairIssue) {
+    public Repairissue createRepairIssue(@RequestBody RepairIssueDTO repairIssue) {
         return repairIssueService.save(repairIssue);
     }
 
@@ -60,6 +78,8 @@ public class RepairIssueController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+
 
     @PutMapping("/{id}")
     public Repairissue updateRepairIssue(@PathVariable Integer id, @RequestBody Repairissue repairIssue) {

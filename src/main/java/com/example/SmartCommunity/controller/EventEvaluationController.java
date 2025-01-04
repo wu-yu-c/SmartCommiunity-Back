@@ -56,4 +56,8 @@ public class EventEvaluationController {
             return ResponseEntity.status(500).body(response);
         }
     }
+
+    // 根据评价ID删除评价
+    // 根据用户ID查看某用户进行的所有评价
+    // 根据工作人员ID查看该工作人员收到的所有评价
 }
