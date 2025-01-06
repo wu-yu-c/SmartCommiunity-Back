@@ -2,26 +2,24 @@ package com.example.SmartCommunity.service;
 
 import com.example.SmartCommunity.dto.RepairIssueDTO;
 import com.example.SmartCommunity.dto.RepairIssueResponseDTO;
-import com.example.SmartCommunity.model.Repairissue;
+import com.example.SmartCommunity.model.RepairIssue;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface RepairIssueService {
     // 实现原有的CRUD方法
-    List<Repairissue> findAll();
+    List<RepairIssue> findAll();
 
-    Repairissue findById(Integer id);
+    RepairIssue findById(Integer id);
 
-    Repairissue save(RepairIssueDTO repairIssue);
-
-    Repairissue update(Repairissue repairIssue);
+    RepairIssue update(RepairIssue repairIssue);
 
     void deleteById(Integer id);
 
-    Repairissue createRepairIssueWithFiles(RepairIssueDTO dto, MultipartFile imageFile, MultipartFile videoFile);
+    RepairIssue createRepairIssue(RepairIssueDTO dto, MultipartFile imageFile, MultipartFile videoFile);
 
-    RepairIssueResponseDTO getRepairIssueWithFiles(Integer id);
+    RepairIssueResponseDTO getRepairIssueInfo(Integer id);
 
     List<RepairIssueResponseDTO> getRepairIssueByResidentId(Long residentId);
 

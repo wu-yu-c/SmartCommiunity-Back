@@ -5,7 +5,7 @@ import java.time.Instant;
 
 @Data
 public class RepairIssueResponseDTO {
-    private Integer id;
+    private Long id;
     private Long residentID;
     private String repairIssueDetails;
     private String repairIssueStatus;
@@ -13,6 +13,6 @@ public class RepairIssueResponseDTO {
     private String repairAddress;
     private String repairIssueTitle;
     private String repairIssueCategory;
-    private byte[] imageData;
-    private byte[] videoData;
+    private String imageUrl;
+    private String videoUrl;
 }

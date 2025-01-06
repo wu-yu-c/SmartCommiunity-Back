@@ -2,7 +2,7 @@ package com.example.SmartCommunity.controller;
 
 import com.example.SmartCommunity.dto.RepairIssueDTO;
 import com.example.SmartCommunity.dto.RepairIssueResponseDTO;
-import com.example.SmartCommunity.model.Repairissue;
+import com.example.SmartCommunity.model.RepairIssue;
 import com.example.SmartCommunity.service.RepairIssueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,21 +27,15 @@ public class RepairIssueController {
     private RepairIssueService repairIssueService;
 
     @GetMapping
-    public List<Repairissue> getAllRepairIssues() {
+    public List<RepairIssue> getAllRepairIssues() {
         return repairIssueService.findAll();
     }
 
-    // 不返回文件数据的接口（原有接口）
-    @GetMapping("/{id}")
-    public Repairissue getRepairIssueById(@PathVariable Integer id) {
-        return repairIssueService.findById(id);
-    }
-
-    // 返回文件数据的接口（新接口）
+    @Operation(summary = "通过事件ID获取报修事件的详情",description = "传入事件ID，返回该事件的所有信息")
     @GetMapping("/{id}/with-files")
-    public ResponseEntity<RepairIssueResponseDTO> getRepairIssueWithFiles(@PathVariable Integer id) {
+    public ResponseEntity<RepairIssueResponseDTO> getRepairIssueInfo(@PathVariable Integer id) {
         try {
-            RepairIssueResponseDTO response = repairIssueService.getRepairIssueWithFiles(id);
+            RepairIssueResponseDTO response = repairIssueService.getRepairIssueInfo(id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
@@ -62,25 +57,34 @@ public class RepairIssueController {
         }
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Repairissue createRepairIssue(@RequestBody RepairIssueDTO repairIssue) {
-        return repairIssueService.save(repairIssue);
-    }
-
-    @PostMapping(value = "/with-files", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE})
-    public ResponseEntity<Repairissue> createRepairIssueWithFiles(
-            @RequestPart("repairIssue") RepairIssueDTO repairIssueDTO,
-            @RequestPart(value = "image", required = false) MultipartFile image,
-            @RequestPart(value = "video", required = false) MultipartFile video) {
+    @Operation(summary = "上传报修事件")
+    @PostMapping(value = "/uploadRepairIssue",consumes = "multipart/form-data")
+    public ResponseEntity<?> createRepairIssueWithFiles(
+            @RequestParam("residentID") Long residentID,
+            @RequestParam("repairIssueDetails") String repairIssueDetails,
+            @RequestParam("repairAddress") String repairAddress,
+            @RequestParam("repairIssueTitle") String repairIssueTitle,
+            @RequestParam("repairIssueCategory") String repairIssueCategory,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "video", required = false) MultipartFile video) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            Repairissue created = repairIssueService.createRepairIssueWithFiles(repairIssueDTO, image, video);
-            return ResponseEntity.ok(created);
+            RepairIssueDTO repairIssueDTO = new RepairIssueDTO(residentID, repairIssueDetails, repairAddress,
+                    repairIssueTitle, repairIssueCategory);
+            RepairIssue created = repairIssueService.createRepairIssue(repairIssueDTO, image, video);
+            response.put("code", HttpStatus.CREATED.value());
+            response.put("data", created);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            // 设置失败响应内容
+            response.put("code", 400);
+            response.put("message", "Upload failed: " + e.getMessage());
+            response.put("data", null);
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
-    @Operation(summary = "获取所有保修地址")
+    @Operation(summary = "获取所有报修地址")
     @GetMapping("/getAllRepairAddresses")
     public ResponseEntity<List<String>> getAllRepairAddresses() {
         try {
@@ -97,7 +101,7 @@ public class RepairIssueController {
     }
 
     @PutMapping("/{id}")
-    public Repairissue updateRepairIssue(@PathVariable Integer id, @RequestBody Repairissue repairIssue) {
+    public RepairIssue updateRepairIssue(@PathVariable Long id, @RequestBody RepairIssue repairIssue) {
         repairIssue.setId(id);
         return repairIssueService.update(repairIssue);
     }

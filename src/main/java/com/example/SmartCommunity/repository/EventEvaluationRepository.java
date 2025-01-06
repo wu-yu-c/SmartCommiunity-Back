@@ -22,9 +22,12 @@ public interface EventEvaluationRepository extends JpaRepository<EventEvaluation
     List<EventWithWorkerInfoDTO> findAllEventsWithWorkerInfo();
 
     @Query("SELECT new com.example.SmartCommunity.dto.ServiceDTO(" +
-            "e.EventID, e.Description, e.Score, e.Content,e.CreatedTime) " +
-            "FROM EventEvaluation e WHERE e.staff.staffID = :staffID")
+            "e.EventID, e.user.userID, r.repairIssueDetails, e.Description, e.Score, e.Content, e.CreatedTime) " +
+            "FROM EventEvaluation e " +
+            "JOIN RepairIssue r ON r.id = e.EventID " + // 这里连接条件
+            "WHERE e.staff.staffID = :staffID")
     List<ServiceDTO> findServicesByStaffId(@Param("staffID") Long staffID);
+
 
     @Query("SELECT new com.example.SmartCommunity.dto.StaffWithEvaluatedCount (" +
             "s.staffID, s.name, s.avatar, s.position, s.department, s.averageRating, COUNT(e.EventID)) " +
@@ -32,5 +35,4 @@ public interface EventEvaluationRepository extends JpaRepository<EventEvaluation
             "JOIN e.staff s " +
             "GROUP BY s.staffID, s.name, s.avatar, s.position, s.department, s.averageRating")
     List<StaffWithEvaluatedCount> findStaffEvaluationCounts();
-
 }

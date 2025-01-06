@@ -12,11 +12,11 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "repairissue", schema = "smart_community")
-public class Repairissue {
+public class RepairIssue {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 自动生成主键值
     @Column(name = "RepairIssueID", nullable = false)
-    private Integer id;
+    private Long id;
 
     @NotNull
     @Column(name = "ResidentID", nullable = false)
@@ -51,10 +51,12 @@ public class Repairissue {
     @Column(name = "RepairIssueCategory", nullable = false, length = 128)
     private String repairIssueCategory;
 
-    @Column(name = "video_id")
-    private Integer videoId;
+    @Size(max = 256)
+    @Column(name = "VideoUrl", length = 256)
+    private String videoUrl;
 
-    @Column(name = "image_id")
-    private Integer imageId;
+    @Size(max = 256)
+    @Column(name = "ImageUrl", length = 256)
+    private String imageUrl;
 
 }

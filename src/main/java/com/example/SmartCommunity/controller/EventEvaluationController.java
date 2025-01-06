@@ -118,6 +118,31 @@ public class EventEvaluationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    @Operation(summary="根据EventID删除评价")
+    @DeleteMapping("/deleteEvaluationByEventID/{EventID}")
+    public ResponseEntity<Map<String, Object>> deleteEvaluationByEventID(@PathVariable Long EventID){
+        Map<String, Object> response = new HashMap<>();
+        try{
+            boolean isDeleted = eventEvaluationService.deleteEvaluationByEventID(EventID);
+            if (isDeleted) {
+                // 删除成功
+                response.put("code", HttpStatus.OK.value());
+                response.put("message", "Event deleted successfully.");
+                return ResponseEntity.ok(response);
+            } else {
+                // 如果未找到对应的 EventID
+                response.put("code", HttpStatus.NOT_FOUND.value());
+                response.put("message", "Event evaluation not found for EventID: " + EventID);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        }catch(Exception e){
+            response.put("status", "error");
+            response.put("message", "An error occurred while fetching event evaluations.");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
     // 根据评价ID删除评价
     // 根据用户ID查看某用户进行的所有评价
     // 根据工作人员ID查看该工作人员收到的所有评价

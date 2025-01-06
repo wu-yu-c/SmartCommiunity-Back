@@ -11,4 +11,6 @@ public interface EventEvaluationService {
     void updateAverageRating(Long staffId);
 
     List<EventWithWorkerInfoDTO> getAllEvaluationsWithWorkerInfo();
+
+    boolean deleteEvaluationByEventID(Long eventID);
 }

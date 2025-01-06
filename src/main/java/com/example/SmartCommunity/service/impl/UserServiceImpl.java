@@ -237,7 +237,7 @@ public class UserServiceImpl implements UserService {
             // 使用 UUID 生成唯一文件名
             String originalFileName = file.getOriginalFilename();
             String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+            String uniqueFileName = UUID.randomUUID() + fileExtension;
 
             String newAvatarUrl = OSSUtils.uploadFileToOSS(file, uniqueFileName);
             if (newAvatarUrl.equals("failure")) {

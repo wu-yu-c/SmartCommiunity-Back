@@ -33,7 +33,7 @@ public class EventEvaluationImpl implements EventEvaluationService {
         // 查找对应的 Evaluator 实体类
         Staff staff = staffRepository.findById(staffId)
                 .orElseThrow(() -> new RuntimeException("Staff not found"));
-        User evaluator=userRepository.findById(evaluatorId)
+        User evaluator = userRepository.findById(evaluatorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         // 创建 EventEvaluation 实体类
         EventEvaluation eventEvaluation = new EventEvaluation();
@@ -75,5 +75,17 @@ public class EventEvaluationImpl implements EventEvaluationService {
         } catch (Exception e) {
             throw new RuntimeException("Error fetching event evaluations", e);
         }
+    }
+
+    public boolean deleteEvaluationByEventID(Long eventID) {
+        // 使用 eventID 查找对应的评价
+        Optional<EventEvaluation> evaluation = eventEvaluationRepository.findById(Math.toIntExact(eventID));
+
+        // 如果评价存在，进行删除并返回 true；否则返回 false
+        if (evaluation.isPresent()) {
+            eventEvaluationRepository.delete(evaluation.get());
+            return true;
+        }
+        return false; // 如果未找到，返回 false
     }
 }
