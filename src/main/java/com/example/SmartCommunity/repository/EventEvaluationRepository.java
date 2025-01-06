@@ -31,8 +31,8 @@ public interface EventEvaluationRepository extends JpaRepository<EventEvaluation
 
     @Query("SELECT new com.example.SmartCommunity.dto.StaffWithEvaluatedCount (" +
             "s.staffID, s.name, s.avatar, s.position, s.department, s.averageRating, COUNT(e.EventID)) " +
-            "FROM EventEvaluation e " +
-            "JOIN e.staff s " +
+            "FROM Staff s " +
+            "LEFT JOIN EventEvaluation e ON e.staff.staffID = s.staffID " +
             "GROUP BY s.staffID, s.name, s.avatar, s.position, s.department, s.averageRating")
     List<StaffWithEvaluatedCount> findStaffEvaluationCounts();
 }

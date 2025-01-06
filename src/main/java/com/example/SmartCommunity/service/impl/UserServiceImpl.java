@@ -7,7 +7,6 @@ import com.example.SmartCommunity.service.UserService;
 import com.example.SmartCommunity.util.OSSUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.apache.commons.lang3.StringUtils;
@@ -150,6 +149,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void changePassword(String username, String phone, String newPassword) {
+        // 查找用户
+        User user = (User) userRepository.findByUsernameAndUserPhone(username, phone)
+                .orElseThrow(() -> new RuntimeException("User not found with the provided username and phone"));
+        // 更新密码
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+    }
+
     // 获取用户信息并转换为dto
     @Override
     public Map<String, Object> getUserInfo(Long userId) {
@@ -238,8 +248,9 @@ public class UserServiceImpl implements UserService {
             String originalFileName = file.getOriginalFilename();
             String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
             String uniqueFileName = UUID.randomUUID() + fileExtension;
+            String objectName = "Avatar/" + uniqueFileName;
+            String newAvatarUrl = OSSUtils.uploadFileToOSS(file, objectName);
 
-            String newAvatarUrl = OSSUtils.uploadFileToOSS(file, uniqueFileName);
             if (newAvatarUrl.equals("failure")) {
                 result.put("code", HttpStatus.INTERNAL_SERVER_ERROR);
                 result.put("message", "Failed to upload new avatar");
@@ -247,7 +258,7 @@ public class UserServiceImpl implements UserService {
             }
 
             // 4. 更新用户信息
-            String fileUrl = "https://first-tekcub.oss-cn-shanghai.aliyuncs.com/" + uniqueFileName;
+            String fileUrl = "https://first-tekcub.oss-cn-shanghai.aliyuncs.com/" + objectName;
             user.setAvatar(fileUrl);
             userRepository.save(user);
             result.put("code", HttpStatus.OK.value());

@@ -14,5 +14,5 @@ public class StaffWithEvaluatedCount {
     private String position;
     private String department;
     private BigDecimal averageRating;
-    private Long evaluationCount;  // 某职工被评价次数
+    private Long evaluationCount= 0L;  // 某职工被评价次数
 }

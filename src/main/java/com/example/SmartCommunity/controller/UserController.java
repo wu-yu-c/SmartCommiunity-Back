@@ -5,6 +5,7 @@ import com.example.SmartCommunity.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +20,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Operation(summary = "用户注册接口", description = "用户通过用户名、手机号与密码注册，用户名与密码必须唯一")
+    @Operation(summary = "用户注册接口", description = "用户通过用户名、手机号与密码注册，用户名与手机号必须唯一")
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(
             @RequestParam String username,
@@ -55,6 +56,19 @@ public class UserController {
             @RequestBody UserDTO userDTO) {
         Map<String, Object> response = userService.updateUserInfo(userId, userDTO);
         return ResponseEntity.status((Integer) response.get("code")).body(response);
+    }
+
+    @Operation(summary = "修改用户密码接口")
+    @PutMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@RequestParam String name,
+                                                 @RequestParam String phone,
+                                                 @RequestParam String newPassword) {
+        try {
+            userService.changePassword(name, phone, newPassword);
+            return ResponseEntity.ok("Password updated successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @Operation(summary="上传或修改用户头像接口",description = "通过用户ID上传头像，如果已有头像的话就修改头像")

@@ -46,8 +46,8 @@ public class Staff {
     private BigDecimal averageRating;
 
     @Size(max = 255)
-    @Column(name = "Email")
-    private String email;
+    @Column(name = "PhoneNumber")
+    private String phoneNumber;
 
     @ManyToOne
     @JoinColumn(name = "AreaID", referencedColumnName = "AreaID", nullable = true)
