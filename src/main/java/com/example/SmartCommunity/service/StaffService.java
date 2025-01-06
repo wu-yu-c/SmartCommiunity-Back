@@ -26,4 +26,6 @@ public interface StaffService {
     UpdatedStaffInfoDTO updateProfile(Long staffId, String name, String phoneNumber, MultipartFile avatar);
 
     String staffAvatar(Long id, MultipartFile file);
+
+    Map<String, Object> getStaffById(Long staffId);
 }

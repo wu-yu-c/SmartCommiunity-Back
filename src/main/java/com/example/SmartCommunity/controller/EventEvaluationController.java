@@ -27,7 +27,7 @@ public class EventEvaluationController {
     @Autowired
     private StaffService staffService;
 
-    @Operation(summary = "用户上传对事件的评价", description = "用户上传对某次服务的评价，需要的参数为用户id，服务人员的id，" +
+    @Operation(summary = "用户上传对员工的评价", description = "用户上传对某次服务的评价，需要的参数为用户id，服务人员的id，" +
             "对本次服务内容的描述，对服务人员的评分以及评价的内容，上传成功后会同步更新该服务人员的平均分")
     @PostMapping("/evaluate")
     public ResponseEntity<Map<String, Object>> evaluateEvent(
@@ -65,7 +65,7 @@ public class EventEvaluationController {
         }
     }
 
-    @Operation(summary = "获取所有事件评价",description = "获取所有的事件评价，同时进行服务的工作人员基本信息")
+    @Operation(summary = "获取所有事件评价",description = "获取所有的事件评价，以及进行服务的工作人员基本信息")
     @GetMapping("/getAllEvaluation")
     public ResponseEntity<Map<String, Object>> getAllEvaluation() {
         Map<String, Object> response = new HashMap<>();

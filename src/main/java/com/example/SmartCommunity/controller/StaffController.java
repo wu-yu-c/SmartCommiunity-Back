@@ -40,8 +40,19 @@ public class StaffController {
             return new ResponseEntity<>(map,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @Operation(summary="通过id获取员工详情")
+    @GetMapping("/getStaffById")
+    public ResponseEntity<Map<String,Object>> getStaffById(@RequestParam Long staffId){
+        try{
+            Map<String,Object>result =staffService.getStaffById(staffId);
+            return ResponseEntity.status((Integer) result.get("code")).body(result);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(new HashMap<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-    @Operation(summary = "获取工作人员列表",description = "返回工作人员列表，属性包括id、姓名、位置、头像、部门" +
+    @Operation(summary = "获取工作人员列表",description = "返回工作人员列表，属性包括id、姓名、职位、头像、部门" +
             "、平均分以及负责的区域编号")
     @GetMapping("/getStaffList")
     public ResponseEntity<List<StaffResponseDTO>> getStaffList() {
