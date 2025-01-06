@@ -178,8 +178,10 @@ public class StaffServiceImpl implements StaffService {
             throw new IllegalArgumentException("Phone number already in use by another staff member.");
         }
         // 更新姓名和电话号码
-        staff.setName(name);
-        staff.setPhoneNumber(phoneNumber);
+        if(name!=null)
+            staff.setName(name);
+        if(phoneNumber!=null)
+            staff.setPhoneNumber(phoneNumber);
 
         // 如果有上传头像，处理上传并更新头像路径
         if (avatar != null && !avatar.isEmpty()) {
@@ -200,10 +202,12 @@ public class StaffServiceImpl implements StaffService {
         try {
             // 1. 获取用户信息
             Staff user = staffRepository.findById(id).orElseThrow(() -> new RuntimeException("职工不存在"));
+            String defaultAvatar = "https://first-tekcub.oss-cn-shanghai.aliyuncs.com/Avatar/" +
+                    "e6fc3672-f78c-4328-b93d-124f38a3aa35.jpg";
 
             // 2. 处理旧头像
             String oldAvatarUrl = user.getAvatar();
-            if (oldAvatarUrl != null) {
+            if (oldAvatarUrl != null&& !oldAvatarUrl.equals(defaultAvatar)) {
                 // 删除旧头像
                 String oldAvatarKey = oldAvatarUrl.replace("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/", "");
                 OSSUtils.deleteFile(oldAvatarKey);

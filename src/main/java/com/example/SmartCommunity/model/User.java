@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import java.sql.Timestamp; // 导入 Timestamp
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
@@ -34,6 +35,7 @@ public class User {
     private Timestamp createdTime;
 
     @Column(name = "Avatar")
+    @ColumnDefault("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/Avatar/e6fc3672-f78c-4328-b93d-124f38a3aa35.jpg")
     private String avatar;
     // Getters and Setters
     // Lombok 的 @Getter 和 @Setter 自动生成

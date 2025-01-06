@@ -234,10 +234,12 @@ public class UserServiceImpl implements UserService {
         try {
             // 1. 获取用户信息
             User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+            String defaultAvatar = "https://first-tekcub.oss-cn-shanghai.aliyuncs.com/Avatar/" +
+                    "e6fc3672-f78c-4328-b93d-124f38a3aa35.jpg";
 
             // 2. 处理旧头像
             String oldAvatarUrl = user.getAvatar();
-            if (oldAvatarUrl != null) {
+            if (oldAvatarUrl != null&&!oldAvatarUrl.equals(defaultAvatar)) {
                 // 删除旧头像
                 String oldAvatarKey = oldAvatarUrl.replace("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/", "");
                 OSSUtils.deleteFile(oldAvatarKey);

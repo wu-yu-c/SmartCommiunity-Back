@@ -33,6 +33,7 @@ public class Staff {
     private String position;
 
     @Size(max = 255)
+    @ColumnDefault("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/Avatar/e6fc3672-f78c-4328-b93d-124f38a3aa35.jpg")
     @Column(name = "Avatar")
     private String avatar;
 
