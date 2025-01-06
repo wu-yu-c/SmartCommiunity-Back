@@ -22,9 +22,8 @@ public interface EventEvaluationRepository extends JpaRepository<EventEvaluation
     List<EventWithWorkerInfoDTO> findAllEventsWithWorkerInfo();
 
     @Query("SELECT new com.example.SmartCommunity.dto.ServiceDTO(" +
-            "e.EventID, e.user.userID, r.repairIssueDetails, e.Description, e.Score, e.Content, e.CreatedTime) " +
-            "FROM EventEvaluation e " +
-            "JOIN RepairIssue r ON r.id = e.EventID " + // 这里连接条件
+            "e.EventID, e.user.userID,  e.Description, e.Score, e.Content, e.CreatedTime) " +
+            "FROM EventEvaluation e "+
             "WHERE e.staff.staffID = :staffID")
     List<ServiceDTO> findServicesByStaffId(@Param("staffID") Long staffID);
 
