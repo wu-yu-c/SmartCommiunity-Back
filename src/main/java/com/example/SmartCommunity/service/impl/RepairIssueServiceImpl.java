@@ -162,4 +162,8 @@ public class RepairIssueServiceImpl implements RepairIssueService {
 
         return responses;
     }
+
+    public List<String> getAllRepairAddresses() {
+        return repairIssueRepository.findAllRepairAddress();
+    }
 }

@@ -24,4 +24,6 @@ public interface RepairIssueService {
     RepairIssueResponseDTO getRepairIssueWithFiles(Integer id);
 
     List<RepairIssueResponseDTO> getRepairIssueByResidentId(Long residentId);
+
+    List<String> getAllRepairAddresses();
 }

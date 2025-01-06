@@ -93,8 +93,8 @@ public class AiAssistantController {
         }
     }
 
-    @Operation(summary = "更新ChatTopic的名字",description = "传入TopicId和的新名字")
-    @DeleteMapping("/updateTopic/{topicId}")
+    @Operation(summary = "删除ChatTopic")
+    @DeleteMapping("/deleteTopic/{topicId}")
     public ResponseEntity<String> deleteTopicById(@PathVariable Long topicId) {
         try {
             aiAssistantService.deleteTopicById(topicId);
@@ -117,8 +117,8 @@ public class AiAssistantController {
         }
     }
 
-    @Operation(summary = "删除ChatTopic")
-    @PutMapping("/deleteTopic/{topicId}")
+    @Operation(summary = "更新ChatTopic的名字",description = "传入TopicId和的新名字")
+    @PutMapping("/updateTopic/{topicId}")
     public ResponseEntity<String> updateTopicName(
             @PathVariable Long topicId,
             @RequestParam @NotNull String newTopicName) {

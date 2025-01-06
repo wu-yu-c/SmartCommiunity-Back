@@ -1,6 +1,5 @@
 package com.example.SmartCommunity.dto;
 
-import com.example.SmartCommunity.model.ManagementArea;
 import com.example.SmartCommunity.model.Staff;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

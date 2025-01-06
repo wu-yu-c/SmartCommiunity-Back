@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.service.impl;
 
+import com.example.SmartCommunity.dto.EventWithWorkerInfoDTO;
 import com.example.SmartCommunity.model.EventEvaluation;
 import com.example.SmartCommunity.model.Staff;
 import com.example.SmartCommunity.model.User;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -64,6 +66,14 @@ public class EventEvaluationImpl implements EventEvaluationService {
             staffRepository.save(staff);
         } else {
             throw new IllegalArgumentException("Evaluator not found for ID: " + staffId);
+        }
+    }
+
+    public List<EventWithWorkerInfoDTO> getAllEvaluationsWithWorkerInfo() {
+        try {
+            return eventEvaluationRepository.findAllEventsWithWorkerInfo();
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching event evaluations", e);
         }
     }
 }

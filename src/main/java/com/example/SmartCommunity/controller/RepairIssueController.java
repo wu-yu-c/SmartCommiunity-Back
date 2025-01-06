@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -79,7 +80,21 @@ public class RepairIssueController {
         }
     }
 
-
+    @Operation(summary = "获取所有保修地址")
+    @GetMapping("/getAllRepairAddresses")
+    public ResponseEntity<List<String>> getAllRepairAddresses() {
+        try {
+            List<String> addresses = repairIssueService.getAllRepairAddresses();
+            if (addresses.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(addresses);
+        } catch (Exception e) {
+            // 异常处理，记录日志等
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
 
     @PutMapping("/{id}")
     public Repairissue updateRepairIssue(@PathVariable Integer id, @RequestBody Repairissue repairIssue) {

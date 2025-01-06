@@ -1,38 +1,54 @@
 package com.example.SmartCommunity.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.math.BigDecimal;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "Staff")
+@Table(name = "staff", schema = "smart_community")
 public class Staff {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "StaffID")
+    @Column(name = "StaffID", nullable = false)
     private Long staffID;
 
-    @Column(name = "Name", nullable = false)
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "Name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "Position")
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "Password", nullable = false)
+    private String password;
+
+    @Size(max = 100)
+    @Column(name = "Position", length = 100)
     private String position;
 
+    @Size(max = 255)
     @Column(name = "Avatar")
     private String avatar;
 
-    @Column(name = "Department")
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "Department", nullable = false, length = 100)
     private String department;
 
+    @ColumnDefault("0.00")
     @Column(name = "AverageRating", precision = 3, scale = 2)
     private BigDecimal averageRating;
 
-    // 外键关联 ManagementArea 表
+    @Size(max = 255)
+    @Column(name = "Email")
+    private String email;
+
     @ManyToOne
     @JoinColumn(name = "AreaID", referencedColumnName = "AreaID", nullable = true)
     private ManagementArea managementArea;

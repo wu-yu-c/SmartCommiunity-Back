@@ -1,5 +1,7 @@
 package com.example.SmartCommunity.controller;
 
+import com.example.SmartCommunity.dto.StaffWithEvaluatedCount;
+import com.example.SmartCommunity.dto.StaffWithServicesDTO;
 import com.example.SmartCommunity.service.StaffService;
 import com.example.SmartCommunity.dto.StaffResponseDTO;
 import com.example.SmartCommunity.model.Staff;
@@ -8,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Map;
@@ -57,6 +61,25 @@ public class StaffController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "查询出错，请稍后再试"));
+        }
+    }
+
+    @Operation(summary = "返回每个工作人员被评分的次数",description = "返回一个人员列表，除了职工基本信息，还包括其被评价次数")
+    @GetMapping("/getStaffWithEvaluatedCount")
+    public ResponseEntity<?> getStaffWithEvaluatedCount() {
+        try {
+            // 调用 service 层方法来获取工作人员的基本信息及评价次数
+            List<StaffWithEvaluatedCount> staffEvaluationCounts = staffService.getStaffEvaluationCounts();
+            if (staffEvaluationCounts.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("没有找到工作人员的评价记录.");
+            }
+            return ResponseEntity.ok(staffEvaluationCounts);
+
+        } catch (Exception ex) {
+            // 处理其他未知异常的情况，返回 500 错误
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("服务器发生错误，请稍后重试.");
         }
     }
 

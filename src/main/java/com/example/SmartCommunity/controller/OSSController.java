@@ -48,7 +48,7 @@ public class OSSController {
         }
     }
 
-    @Operation(summary = "从OSS下载文件", description = "输入文件的完整路径，从OSS下载文件")
+    @Operation(summary = "从OSS下载文件", description = "输入文件的名称，从OSS下载文件")
     @GetMapping("api/download")
     public ResponseEntity<Map<String,Object>> downloadFile(
             @RequestParam String objectName, // 必需参数：要下载的文件名
@@ -120,7 +120,7 @@ public class OSSController {
         }
     }
 
-    @Operation(summary = "通过文件的完整路径删除文件")
+    @Operation(summary = "通过文件的名称删除文件")
     @PostMapping("api/deleteFile")
     public ResponseEntity<Map<String, Object>> deleteFile(@RequestParam String fileName) {
         Map<String, Object> response = new HashMap<>();

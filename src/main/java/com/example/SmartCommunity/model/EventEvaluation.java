@@ -14,7 +14,7 @@ public class EventEvaluation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "EventID")
-    private Integer EventID; // 主键：事件ID，类型为 int
+    private Long EventID; // 主键：事件ID，类型为 int
 
     @Setter
     @Getter
