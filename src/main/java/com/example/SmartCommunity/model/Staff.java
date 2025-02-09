@@ -53,4 +53,9 @@ public class Staff {
     @ManyToOne
     @JoinColumn(name = "AreaID", referencedColumnName = "AreaID", nullable = true)
     private ManagementArea managementArea;
+
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "JobDetails", nullable = false, length = 100)
+    private String jobDetails;
 }
