@@ -21,7 +21,7 @@ public class Qwen2Generator implements AiResponseGenerator {
     @Override
     public ChatMessageDTO generateResponse(ChatMessageDTO message) throws Exception {
         // 创建请求的URL
-        URL url = new URL("http://localhost:5000/v1/chat/completions");
+        URL url = new URL("http://localhost:5001/v1/chat/completions");
 
         // 建立HTTP连接
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
