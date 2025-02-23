@@ -11,4 +11,5 @@ public class RepairIssueDTO {
     private String repairAddress;
     private String repairIssueTitle;
     private String repairIssueCategory;
+    private String repairIssueStatus;
 }

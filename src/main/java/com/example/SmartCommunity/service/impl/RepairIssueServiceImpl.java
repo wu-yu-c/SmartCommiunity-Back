@@ -59,7 +59,6 @@ public class RepairIssueServiceImpl implements RepairIssueService {
             if (videoFile != null)
                 upload(videoFile, repairIssue,1);
             // 设置默认字段值
-            repairIssue.setRepairIssueStatus("Pending");
             repairIssue.setRepairIssueStart(Instant.now());
             // 保存到数据库
             return repairIssueRepository.save(repairIssue);

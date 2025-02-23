@@ -58,19 +58,20 @@ public class RepairIssueController {
     }
 
     @Operation(summary = "上传报修事件")
-    @PostMapping(value = "/uploadRepairIssue",consumes = "multipart/form-data")
+    @PostMapping(value = "/uploadRepairIssue")
     public ResponseEntity<?> createRepairIssueWithFiles(
             @RequestParam("residentID") Long residentID,
             @RequestParam("repairIssueDetails") String repairIssueDetails,
             @RequestParam("repairAddress") String repairAddress,
             @RequestParam("repairIssueTitle") String repairIssueTitle,
             @RequestParam("repairIssueCategory") String repairIssueCategory,
+            @RequestParam("repairIssueStatus") String repairIssueStatus,
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam(value = "video", required = false) MultipartFile video) {
         Map<String, Object> response = new HashMap<>();
         try {
             RepairIssueDTO repairIssueDTO = new RepairIssueDTO(residentID, repairIssueDetails, repairAddress,
-                    repairIssueTitle, repairIssueCategory);
+                    repairIssueTitle, repairIssueCategory, repairIssueStatus);
             RepairIssue created = repairIssueService.createRepairIssue(repairIssueDTO, image, video);
             response.put("code", HttpStatus.CREATED.value());
             response.put("data", created);
@@ -102,6 +103,7 @@ public class RepairIssueController {
 
     @PutMapping("/{id}")
     public RepairIssue updateRepairIssue(@PathVariable Long id, @RequestBody RepairIssue repairIssue) {
+        System.err.println(repairIssue);
         repairIssue.setId(id);
         return repairIssueService.update(repairIssue);
     }
