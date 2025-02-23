@@ -43,7 +43,7 @@ public class AiAssistantController {
         try {
             String userMessageContent = userMessageRequestDTO.getUserMessageContent();
             String userImageContent = userMessageRequestDTO.getUserImageContent();
-            if (userMessageContent == null && userImageContent == null) {
+            if (userMessageContent == null) {
                 return ResponseEntity.badRequest().body("User content is required.");
             }
             String response = aiAssistantService.getAiResponse(topicId, userMessageContent, userImageContent);
