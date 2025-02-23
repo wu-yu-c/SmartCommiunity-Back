@@ -3,6 +3,7 @@ package com.example.SmartCommunity.service.impl;
 import com.example.SmartCommunity.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -10,6 +11,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -171,4 +176,39 @@ public class VideoServiceImpl implements VideoService {
             throw new Exception("Failed to read multipart file", e);
         }
     }
+
+    @Override
+    public String sendVideoToFlask(byte[] videoBytes, String filename) throws Exception {
+        String flaskUrl = flaskBaseUrl + "/upload/video";
+
+        // 创建一个 ByteArrayResource 包装视频文件字节数据
+        ByteArrayResource videoResource = new ByteArrayResource(videoBytes) {
+            @Override
+            public String getFilename() {
+                return filename;
+            }
+        };
+
+        // 构建 multipart 请求体
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("video", videoResource);  // 添加视频文件
+
+        // 设置请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        // 构建请求体
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+        // 发送 POST 请求
+        ResponseEntity<String> response = restTemplate.exchange(flaskUrl, HttpMethod.POST, requestEntity, String.class);
+
+        // 根据响应结果进行处理
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return response.getBody();  // 返回 Flask 的响应内容
+        } else {
+            throw new Exception("Flask 服务处理失败：" + response.getStatusCode());
+        }
+    }
+
 }
