@@ -22,7 +22,6 @@ public class Qwen2Generator implements AiResponseGenerator {
     public ChatMessageDTO generateResponse(ChatMessageDTO message) throws Exception {
         // 创建请求的URL
         URL url = new URL("http://localhost:5001/v1/chat/completions");
-
         // 建立HTTP连接
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -31,6 +30,7 @@ public class Qwen2Generator implements AiResponseGenerator {
 
         // 构建请求体
         String requestBody = buildRequestBody(message);
+        //假如没有image_url,将其设置为空白图片地址
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = requestBody.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
@@ -79,7 +79,12 @@ public class Qwen2Generator implements AiResponseGenerator {
         // 添加系统角色
         ObjectNode systemMessage = mapper.createObjectNode();
         systemMessage.put("role", "system");
-        systemMessage.put("content", "你是一个社区工作人员，请你为用户提供热心的服务。");
+        if(message.getImage_url().length()==0){
+            //System.out.println("上传图片为空白");
+            message.setImage_url("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/85898db9-8a19-4e31-b17d-b58e5a272ee7.jfif");
+            systemMessage.put("content", "你是一个社区工作人员，请你为用户提供热心的服务,忽视图片输入图片中的内容");
+        }
+        else systemMessage.put("content", "你是一个社区工作人员，请你为用户提供热心的服务。");
         messages.add(systemMessage);
 
         // 添加用户角色
