@@ -103,7 +103,6 @@ public class RepairIssueController {
 
     @PutMapping("/{id}")
     public RepairIssue updateRepairIssue(@PathVariable Long id, @RequestBody RepairIssue repairIssue) {
-        System.err.println(repairIssue);
         repairIssue.setId(id);
         return repairIssueService.update(repairIssue);
     }
