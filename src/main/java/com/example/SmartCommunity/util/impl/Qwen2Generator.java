@@ -81,7 +81,7 @@ public class Qwen2Generator implements AiResponseGenerator {
         systemMessage.put("role", "system");
         if(message.getImage_url().length()==0){
             //System.out.println("上传图片为空白");
-            message.setImage_url("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/85898db9-8a19-4e31-b17d-b58e5a272ee7.jfif");
+            message.setImage_url("https://first-textbucket.oss-cn-shanghai.aliyuncs.com/prompt.png");
             systemMessage.put("content", "你是一个社区工作人员，请你为用户提供热心的服务,忽视图片输入图片中的内容");
         }
         else systemMessage.put("content", "你是一个社区工作人员，请你为用户提供热心的服务。");

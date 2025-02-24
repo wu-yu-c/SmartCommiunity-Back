@@ -21,7 +21,7 @@ public class OSSUtils {
     // Endpoint以华东2（上海）为例，其它Region请按实际情况填写。
     private static final String ENDPOINT = "https://oss-cn-shanghai.aliyuncs.com";
     // Bucket名称
-    private static final String BUCKET_NAME = "first-tekcub";
+    private static final String BUCKET_NAME = "first-textbucket";
 
     public static String uploadFileToOSS(MultipartFile file, String objectName) throws com.aliyuncs.exceptions.ClientException {
         // 从环境变量中获取访问凭证。
