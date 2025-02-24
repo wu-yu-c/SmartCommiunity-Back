@@ -36,7 +36,7 @@ public class OSSController {
         String result = OSSUtils.uploadFileToOSS(file, uniqueFileName);
         Map<String, Object> response = new HashMap<>();
         if ("success".equals(result)) {
-            String fileUrl = "https://first-tekcub.oss-cn-shanghai.aliyuncs.com/"+ uniqueFileName;
+            String fileUrl = "https://first-textbucket.oss-cn-shanghai.aliyuncs.com/"+ uniqueFileName;
             response.put("code", HttpStatus.OK.value());
             response.put("message", "文件上传成功");
             response.put("fileUrl", fileUrl);
