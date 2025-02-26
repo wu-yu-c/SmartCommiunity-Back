@@ -31,10 +31,12 @@ git clone https://gitee.com/TJ_Smart_Community/SmartCommunity-Back.git
 在这里，您可以浏览和调用项目中定义的所有 API。
 ## 项目部署
 1.首先利用maven进行install生成jar包
-2.利用ssh将jar包上传到/home/ubuntu/target目录,找到原jar进程kill掉再启动新jar包即可,注意旧jar包不要删掉,重命名为{origin_name}_old,防止
+2.利用ssh将jar包上传到/website目录,找到原jar进程kill掉再启动新jar包即可,注意旧jar包不要删掉,重命名为{origin_name}_old,防止
 新包有问题可以回退
 ```bash
-scp -r .\SmartCommunity-0.0.1-SNAPSHOT.jar ubuntu@121.5.16.33:/home/ubuntu/target
+scp -r .\SmartCommunity-0.0.1-SNAPSHOT.jar ubuntu@121.5.16.33:/website
 kill -9 原先jar包进程号
-nohup java -jar SmartCommunity-0.0.1-SNAPSHOT.jar &
+screen -r 1788074
+java -jar SmartCommunity-0.0.1-SNAPSHOT.jar
+ctrl A+D 退出 screen
 ```
