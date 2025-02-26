@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.service.impl;
 
+import com.aliyuncs.exceptions.ClientException;
 import com.example.SmartCommunity.controller.AiAssistantController;
 import com.example.SmartCommunity.dto.ChatMessageDTO;
 import com.example.SmartCommunity.dto.UserMessageDTO;
@@ -13,6 +14,7 @@ import com.example.SmartCommunity.repository.UserMessageRepository;
 import com.example.SmartCommunity.repository.UserRepository;
 import com.example.SmartCommunity.service.AiAssistantService;
 import com.example.SmartCommunity.util.AiResponseGenerator;
+import com.example.SmartCommunity.util.OSSUtils;
 import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AiAssistantServiceImpl implements AiAssistantService {
@@ -98,7 +101,6 @@ public class AiAssistantServiceImpl implements AiAssistantService {
                                                                         @NotNull Integer limit) {
         // 获取分页消息
         Page<UserMessage> messages = getMessagesByTopicId(topicId, offset, limit);
-
         // 转换为 DTO
         Page<UserMessageDTO> messageDTOs = messages.map(UserMessageDTO::new);
 
@@ -118,6 +120,21 @@ public class AiAssistantServiceImpl implements AiAssistantService {
     @Override
     @Transactional
     public void deleteTopicById(@NotNull Long topicId) {
+        ChatTopic chatTopic = chatTopicRepository.getReferenceById(topicId);
+        List<UserMessage>messages_=userMessageRepository.findByTopicID(chatTopic);
+        for(UserMessage message:messages_){
+            String url=message.getContentImage();
+            if(url.length()==0)continue;
+            int lastIndex = url.lastIndexOf('/');
+            // 提取文件名部分
+            String fileName = url.substring(lastIndex + 1);
+            try {
+                OSSUtils.deleteFile(fileName);
+            } catch (ClientException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println(message.getContentImage());
+        }
         chatTopicRepository.deleteById(topicId);
     }
 
