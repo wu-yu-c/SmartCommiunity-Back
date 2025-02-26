@@ -29,3 +29,12 @@ git clone https://gitee.com/TJ_Smart_Community/SmartCommunity-Back.git
 项目启动后，打开浏览器，访问以下链接以查看和测试 API：
 [http://localhost/swagger-ui.html](http://localhost/swagger-ui.html)  
 在这里，您可以浏览和调用项目中定义的所有 API。
+## 项目部署
+1.首先利用maven进行install生成jar包
+2.利用ssh将jar包上传到/home/ubuntu/target目录,找到原jar进程kill掉再启动新jar包即可,注意旧jar包不要删掉,重命名为{origin_name}_old,防止
+新包有问题可以回退
+```bash
+scp -r .\SmartCommunity-0.0.1-SNAPSHOT.jar ubuntu@121.5.16.33:/home/ubuntu/target
+kill -9 原先jar包进程号
+nohup java -jar SmartCommunity-0.0.1-SNAPSHOT.jar &
+```
