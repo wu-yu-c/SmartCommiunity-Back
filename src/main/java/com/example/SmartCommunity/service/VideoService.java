@@ -42,4 +42,14 @@ public interface VideoService {
      * @throws Exception 可能抛出的异常
      */
     byte[] getVideoData(String filename) throws Exception;
+
+    /**
+     * 将视频字节数组转发给 Flask 进行处理
+     *
+     * @param videoBytes 视频文件的字节数组
+     * @param filename   视频文件名
+     * @return Flask 服务的响应信息
+     * @throws Exception
+     */
+    String sendVideoToFlask(byte[] videoBytes, String filename) throws Exception;
 }

@@ -7,9 +7,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,8 @@ public class VideoController {
 
     @Autowired
     private VideoService videoService;
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      * 搜索相似视频
@@ -174,6 +178,35 @@ public class VideoController {
 
         public void setText(String text) {
             this.text = text;
+        }
+    }
+
+    /**
+     * 上传视频并将其转发到 Flask 进行处理
+     *
+     * @param videoFile 上传的视频文件
+     * @return 上传状态
+     */
+    @Operation(summary = "上传视频并转发到 Flask")
+    @PostMapping("/upload/video")
+    public ResponseEntity<?> uploadVideo(@RequestParam("video") MultipartFile videoFile) {
+        try {
+            // 将 MultipartFile 转为字节数组
+            byte[] videoBytes = videoFile.getBytes();
+
+            // 将视频文件字节数据传递给 Flask 服务进行处理
+            String flaskResponse = null;
+            try {
+                flaskResponse = videoService.sendVideoToFlask(videoBytes, videoFile.getOriginalFilename());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // 返回结果
+            return ResponseEntity.ok(Map.of("status", "success", "message", flaskResponse));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 }
