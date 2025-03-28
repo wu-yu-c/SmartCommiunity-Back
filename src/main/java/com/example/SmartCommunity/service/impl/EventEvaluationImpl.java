@@ -84,7 +84,7 @@ public class EventEvaluationImpl implements EventEvaluationService {
         // 如果评价存在，进行删除并返回 true；否则返回 false
         if (evaluation.isPresent()) {
             EventEvaluation eventEvaluation = evaluation.get();
-            Long staffId = eventEvaluation.getStaff().getStaffID();
+            Long staffId=eventEvaluation.getStaff().getStaffID();
             eventEvaluationRepository.delete(evaluation.get());
             updateAverageRating(staffId);
             return true;

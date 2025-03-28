@@ -157,12 +157,11 @@ public class StaffServiceImpl implements StaffService {
             if (staff != null) {
                 response.put("code", HttpStatus.OK.value());
                 response.put("staff", staff);
-                return response;
             }else{
                 response.put("code", HttpStatus.NOT_FOUND.value());
                 response.put("message", "不存在该员工");
-                return response;
             }
+            return response;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
