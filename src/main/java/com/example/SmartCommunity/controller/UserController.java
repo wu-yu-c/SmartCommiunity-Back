@@ -1,86 +1,87 @@
 package com.example.SmartCommunity.controller;
 
-import com.example.SmartCommunity.dto.UserDTO;
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import com.example.SmartCommunity.common.response.ApiResponse;
+import com.example.SmartCommunity.dto.*;
 import com.example.SmartCommunity.service.UserService;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
-
-
-
-
-
+@Validated
 @Tag(name = "用户接口")
 @RestController
-@RequestMapping("/User")
+@RequestMapping("/api/user")
 public class UserController {
 
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
-    @Operation(summary = "用户注册接口", description = "用户通过用户名、手机号与密码注册，用户名与手机号必须唯一")
+    @Operation(summary = "用户注册", description = "用户通过用户名、手机号与密码注册，用户名与手机号必须唯一")
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(
-            @RequestParam String username,
-            @RequestParam String userPhone,
-            @RequestParam String password) {
-        Map<String, Object> result = userService.register(username, userPhone, password);
-        return ResponseEntity.status((Integer) result.get("code")).body(result);
+    public ResponseEntity<ApiResponse<UserRegisterDTO>> register(
+            @Valid @RequestBody UserRegisterRequest request) {
+        UserRegisterDTO response = userService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED, "注册成功", response));
     }
 
-    @Operation(summary = "用户登录接口", description = "支持通过用户名或手机号任意一种方式登录")
+    @Operation(summary = "用户登录", description = "支持通过用户名或手机号任意一种方式登录")
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(
+    public ResponseEntity<ApiResponse<UserLoginDTO>> login(
             @RequestParam(required = false) String username,
-            @RequestParam(required = false) String userPhone,
-            @RequestParam String password) {
-
-        // 调用服务层进行用户登录，传入 username 或 userPhone 和密码
-        Map<String, Object> result = userService.login(username, userPhone, password);
-        return ResponseEntity.status((Integer) result.get("code")).body(result);
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam @NotBlank(message = "密码不能为空") String password) {
+        UserLoginDTO response = userService.login(username, phoneNumber, password);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "登录成功", response));
     }
 
-    @Operation(summary = "获取个人信息接口", description = "返回该用户的有关信息")
-    @GetMapping("/getUserInfo/{userId}")
-    public ResponseEntity<Map<String, Object>> getUserInfo(@PathVariable Long userId) {
-        Map<String, Object> result = userService.getUserInfo(userId);
-        return ResponseEntity.status((Integer) result.get("code")).body(result);
+    @Operation(summary = "获取个人信息", description = "返回该用户的有关信息")
+    @SaCheckLogin
+    @GetMapping("/user-info")
+    @JsonView(UserInfoDTO.BasicView.class)
+    public ResponseEntity<ApiResponse<UserInfoDTO>> getUserInfo() {
+        UserInfoDTO response = userService.getUserInfo();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "用户信息获取成功", response));
     }
 
-    @Operation(summary = "修改个人信息接口", description = "返回修改成功与否的结果")
-    @PutMapping("/updateUserInfo/{userId}")
-    public ResponseEntity<Map<String, Object>> updateUserInfo(
-            @PathVariable Long userId,
-            @RequestBody UserDTO userDTO) {
-        Map<String, Object> response = userService.updateUserInfo(userId, userDTO);
-        return ResponseEntity.status((Integer) response.get("code")).body(response);
+    @Operation(summary = "更新个人信息", description = "返回修改成功与否以及修改后的结果")
+    @SaCheckLogin
+    @PutMapping("/user-info")
+    @JsonView(UserInfoDTO.UpdatedInfoView.class)
+    public ResponseEntity<ApiResponse<UserInfoDTO>> updateUserInfo(
+            @Valid @RequestBody UserUpdateRequest updateRequest) {
+        UserInfoDTO response = userService.updateUserInfo(updateRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "用户信息更新成功", response));
     }
 
-    @Operation(summary = "修改用户密码接口")
-    @PutMapping("/changePassword")
-    public ResponseEntity<String> changePassword(@RequestParam String name,
+    @Operation(summary = "修改用户密码",description = "用户和职工都通过该接口修改密码")
+    @PutMapping("/password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestParam String name,
                                                  @RequestParam String phone,
-                                                 @RequestParam String newPassword) {
-        try {
-            userService.changePassword(name, phone, newPassword);
-            return ResponseEntity.ok("Password updated successfully");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+                                                 @RequestParam @Size(min=6,message = "密码的最小长度应为6位") String newPassword) {
+        userService.changePassword(name, phone, newPassword);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "密码修改成功", null));
     }
 
-    @Operation(summary="上传或修改用户头像接口",description = "通过用户ID上传头像，如果已有头像的话就修改头像")
-    @PutMapping(value = "/avatar/{userID}", consumes = "multipart/form-data")
-    public ResponseEntity<?> updateAvatar(
-            @PathVariable("userID") Long userID,
+    @Operation(summary="上传或修改用户头像",description = "通过用户ID上传头像，如果已有头像的话就修改头像")
+    @PutMapping(value = "/{userId}/avatar", consumes = "multipart/form-data")
+    @JsonView(UserInfoDTO.UpdatedAvatarView.class)
+    public ResponseEntity<ApiResponse<UserInfoDTO>> updateAvatar(
+            @PathVariable("userId") @NotNull(message = "用户Id不能为空") Long userId,
             @RequestParam("file") MultipartFile file) {
-        Map<String, Object> response = userService.userAvatar(userID,file);
-        return ResponseEntity.status((Integer) response.get("code")).body(response);
+        UserInfoDTO response = userService.userAvatar(userId,file);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK,"头像上传成功",response));
     }
 }

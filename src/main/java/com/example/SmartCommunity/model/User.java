@@ -1,42 +1,73 @@
 package com.example.SmartCommunity.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.sql.Timestamp; // 导入 Timestamp
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
-@Table(name = "User")
+@Table(name = "user", schema = "SmartCommunity", uniqueConstraints = {
+        @UniqueConstraint(name = "user_name_idx", columnNames = {"user_name"}),
+        @UniqueConstraint(name = "phone_number_idx", columnNames = {"phone_number"})
+})
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "UserID")
-    private Long userID;
+    @Column(name = "user_id", nullable = false)
+    private Long id;
 
-    @Column(name = "UserName", nullable = false, unique = true)
-    private String username;
+    @Size(max = 20)
+    @NotNull
+    @Column(name = "user_name", nullable = false, length = 20)
+    private String userName;
 
-    @Column(name = "Password", nullable = false)
+    @Size(max = 20)
+    @NotNull
+    @Column(name = "phone_number", nullable = false, length = 20)
+    private String phoneNumber;
+
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "UserPhone", unique = true)
-    private String userPhone;
-
-    @Column(name = "CreatedTime", insertable = false, updatable = false)
-    private Timestamp createdTime;
-
-    @Column(name = "Avatar")
-    @ColumnDefault("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/Avatar/e6fc3672-f78c-4328-b93d-124f38a3aa35.jpg")
+    @Size(max = 255)
+    @Column(name = "avatar")
     private String avatar;
-    // Getters and Setters
-    // Lombok 的 @Getter 和 @Setter 自动生成
+
+    @NotNull
+    @ColumnDefault("1")
+    @Column(name = "user_type", nullable = false)
+    private Byte userType;
+
+    @NotNull
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_time", nullable = false, updatable = false)
+    private LocalDateTime createdTime;
+
+    @NotNull
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "updated_time", nullable = false)
+    private LocalDateTime updatedTime;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdTime = LocalDateTime.now();
+        this.updatedTime = LocalDateTime.now();
+        if (this.avatar == null || this.avatar.isEmpty()) {
+            this.avatar = "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/Avatar/defaultAvatar.jpg";
+        }
+        this.userType = Byte.valueOf("1");
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedTime = LocalDateTime.now();
+    }
 }

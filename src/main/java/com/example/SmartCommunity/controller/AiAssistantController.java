@@ -1,33 +1,25 @@
 package com.example.SmartCommunity.controller;
 
-import com.example.SmartCommunity.dto.UserMessageDTO;
-import com.example.SmartCommunity.dto.UserMessageRequestDTO;
-import com.example.SmartCommunity.model.ChatTopic;
-import com.example.SmartCommunity.model.UserMessage;
-import com.example.SmartCommunity.service.AiAssistantService;
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
+import com.alibaba.dashscope.exception.ApiException;
+import com.alibaba.dashscope.exception.NoApiKeyException;
+import com.alibaba.dashscope.exception.UploadFileException;
+import com.example.SmartCommunity.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import com.example.SmartCommunity.service.AiAssistantService;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
-@Tag(name="AI助手接口",description = """
-        ChatTopic 指的是对话的主题，对应的是 ChatGPT 左侧的那一列(点击之后可以切换到不同对话的那个)
-        一个 User 对应多个 ChatTopic，目前一对一即可
-        一个 ChatTopic 对应多个 UserMessage，一个 UserMessage 对应多个 AiMessage""")
 @RestController
 @RequestMapping("/api/ai-assistant")
 public class AiAssistantController {
-
     private final AiAssistantService aiAssistantService;
 
     @Autowired
@@ -35,98 +27,22 @@ public class AiAssistantController {
         this.aiAssistantService = aiAssistantService;
     }
 
-    @Operation(summary="用户发送信息给AI",description = "传入topicId，文本内容，图片url，返回AI的回复")
-    @PostMapping("/process-message")
-    public ResponseEntity<String> processMessage(
-            @RequestParam Long topicId,
-            @RequestBody UserMessageRequestDTO userMessageRequestDTO) {
+    @Operation(summary = "AI对话接口",description = "返回的响应实际上是一个Object，上传的图像大小不得超过10MB，上传的视频时长不得超过40s。" +
+            "使用swagger测试时，不传入sessionId默认会创建一个新的session，所以想使用多轮对话必须在第二次对话时传入sessionId。" +
+            "此外，由于免费额度有限，多轮对话只会读取该session下的最近10条消息记录，太久远的消息会被忽略。")
+    @SaCheckLogin
+    @PostMapping(value = "/chat", consumes = "multipart/form-data")
+    public ResponseEntity<ApiResponse<?>> chat(@RequestParam(value = "sessionId",required = false) Long sessionId,
+            @RequestParam("text") String text,
+            @RequestParam(value = "file", required = false) MultipartFile file)
+            throws NoApiKeyException, UploadFileException, ApiException {
+        Long userId = StpUtil.getLoginIdAsLong();
+        Object response = null;
         try {
-            String userMessageContent = userMessageRequestDTO.getUserMessageContent();
-            String userImageContent = userMessageRequestDTO.getUserImageContent();
-            if (userMessageContent == null) {
-                return ResponseEntity.badRequest().body("User content is required.");
-            }
-            String response = aiAssistantService.getAiResponse(topicId, userMessageContent, userImageContent);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing message: "
-                                                                                + e.getMessage());
+            response = aiAssistantService.processMultiModalInput(sessionId, userId, text, file);
+        } catch (com.alibaba.dashscope.exception.InputRequiredException e) {
+            throw new RuntimeException(e);
         }
-    }
-
-    @Operation(summary = "获取ChatTopic对应的UserMessage",description = """
-            **传入三个参数**: topicId, offset, limit\
-            topicId 不用多说
-            offset 和 limit 是偏移量
-            例如，我要获取最新的 10 条消息，offset = 0, limit = 10
-            我要获取之后的 10 条消息，offset = 10, limit = 10
-            要求 offset 是 limit 的倍数
-            **返回值是分页的内容**:有三个，_embedded, "_links", "page"
-            "_embedded" 里面有一个 "userMessageDTOList"，是真正的信息，注意是倒序排列的
-            "_links"里面是分页的几个地址，去了之后可以获取对应分页的内容，first是第一页，self是自己这一页，next是下一页，last是最后一页
-            "page" 是分页的信息，具体包括一页的大小、元素个数、总页数等等
-            这部分应该只需要使用 _embedded 部分，可以使用 topicId = 3 去测试""")
-    @GetMapping("/messages/{topicId}")
-    public ResponseEntity<PagedModel<EntityModel<UserMessageDTO>>> getMessagesByTopicId(
-            @PathVariable Long topicId,
-            @RequestParam @NotNull Integer offset,
-            @RequestParam @NotNull Integer limit) {
-        try {
-            // 调用 Service 获取封装好的 PagedModel
-            PagedModel<EntityModel<UserMessageDTO>> pagedModel =
-                    aiAssistantService.getMessagesByTopicIdPaged(topicId, offset, limit);
-            return ResponseEntity.ok(pagedModel);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    @Operation(summary = "获取用户对应的ChatTopic")
-    @GetMapping("/topics/{userId}")
-    public ResponseEntity<List<ChatTopic>> getTopicsByUserId(@PathVariable Long userId) {
-        try {
-            List<ChatTopic> topics = aiAssistantService.getTopicsByUserId(userId);
-            return ResponseEntity.ok(topics);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    @Operation(summary = "删除ChatTopic")
-    @DeleteMapping("/deleteTopic/{topicId}")
-    public ResponseEntity<String> deleteTopicById(@PathVariable Long topicId) {
-        try {
-            aiAssistantService.deleteTopicById(topicId);
-            return ResponseEntity.ok("Topic deleted successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting topic: " + e.getMessage());
-        }
-    }
-
-    @Operation(summary = "新增ChatTopic")
-    @PostMapping("/newTopic")
-    public ResponseEntity<String> createTopic(
-            @RequestParam @NotNull Long userId,
-            @RequestParam @NotNull String topicName) {
-        try {
-            aiAssistantService.createTopic(userId, topicName);
-            return ResponseEntity.ok("Topic created successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating topic: " + e.getMessage());
-        }
-    }
-
-    @Operation(summary = "更新ChatTopic的名字",description = "传入TopicId和的新名字")
-    @PutMapping("/updateTopic/{topicId}")
-    public ResponseEntity<String> updateTopicName(
-            @PathVariable Long topicId,
-            @RequestParam @NotNull String newTopicName) {
-        try {
-            aiAssistantService.updateTopicName(topicId, newTopicName);
-            return ResponseEntity.ok("Topic updated successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating topic: " + e.getMessage());
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "获取AI助手响应成功", response));
     }
 }

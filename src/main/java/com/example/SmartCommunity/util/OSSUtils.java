@@ -21,7 +21,7 @@ public class OSSUtils {
     // Endpoint以华东2（上海）为例，其它Region请按实际情况填写。
     private static final String ENDPOINT = "https://oss-cn-shanghai.aliyuncs.com";
     // Bucket名称
-    private static final String BUCKET_NAME = "first-textbucket";
+    private static final String BUCKET_NAME = "1st-bucket";
 
     public static String uploadFileToOSS(MultipartFile file, String objectName) throws com.aliyuncs.exceptions.ClientException {
         // 从环境变量中获取访问凭证。
@@ -32,10 +32,8 @@ public class OSSUtils {
         try {
             // 使用文件输入流上传
             ossClient.putObject(new PutObjectRequest(BUCKET_NAME, objectName, file.getInputStream()));
-            System.out.println("文件上传成功！");
             return "success";
         } catch (OSSException | IOException oe) {
-            System.err.println("上传失败，错误信息: " + oe.getMessage());
             return "failure";
         } finally {
             if (ossClient != null) {
@@ -70,13 +68,10 @@ public class OSSUtils {
             } else
                 return "null";
         } catch (OSSException oe) {
-            System.out.println("OSS异常: " + oe.getErrorMessage());
             return "null"; // OSS错误，返回failure
         } catch (ClientException ce) {
-            System.out.println("客户端异常: " + ce.getMessage());
             return "failure"; // 客户端错误，返回failure
         } catch (IOException e) {
-            e.printStackTrace();
             return "failure"; // 读取文件时发生错误，返回failure
         } finally {
             if (ossClient != null) {
@@ -103,12 +98,8 @@ public class OSSUtils {
                 fileInfoList.add(fileInfo); // 将文件信息添加到列表中
             }
             return fileInfoList; // 返回文件信息列表
-        } catch (OSSException oe) {
-            System.out.println("OSS异常: " + oe.getErrorMessage());
-            return null; // OSS错误，返回null
-        } catch (ClientException ce) {
-            System.out.println("客户端异常: " + ce.getMessage());
-            return null; // 客户端错误，返回null
+        } catch (OSSException | ClientException oe) {
+            return null;
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
@@ -131,11 +122,7 @@ public class OSSUtils {
             } else {
                 return null; // 文件不存在
             }
-        } catch (OSSException oe) {
-            System.out.println("OSS异常: " + oe.getErrorMessage());
-            return null; // 发生错误返回 null
-        } catch (ClientException ce) {
-            System.out.println("客户端异常: " + ce.getMessage());
+        } catch (OSSException | ClientException oe) {
             return null; // 发生错误返回 null
         } finally {
             if (ossClient != null) {
@@ -151,10 +138,6 @@ public class OSSUtils {
         OSS ossClient = new OSSClientBuilder().build(ENDPOINT, credentialsProvider);
         try {
             ossClient.deleteObject(BUCKET_NAME, fileName);
-        } catch (OSSException oe) {
-            System.out.println("OSS异常: " + oe.getErrorMessage());
-        } catch (ClientException ce) {
-            System.out.println("客户端异常: " + ce.getMessage());
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();

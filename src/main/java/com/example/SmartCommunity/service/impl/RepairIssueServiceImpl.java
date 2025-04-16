@@ -1,114 +1,120 @@
 package com.example.SmartCommunity.service.impl;
 
 import com.example.SmartCommunity.dto.RepairIssueDTO;
-import com.example.SmartCommunity.dto.RepairIssueResponseDTO;
+import com.example.SmartCommunity.dto.UploadRepairIssueRequest;
+import com.example.SmartCommunity.model.IssueCategory;
 import com.example.SmartCommunity.model.RepairIssue;
+import com.example.SmartCommunity.model.User;
+import com.example.SmartCommunity.repository.IssueCategoryRepository;
 import com.example.SmartCommunity.repository.RepairIssueRepository;
+import com.example.SmartCommunity.repository.UserRepository;
 import com.example.SmartCommunity.service.RepairIssueService;
 import com.example.SmartCommunity.util.OSSUtils;
+import jdk.jfr.Category;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
-@Transactional
 public class RepairIssueServiceImpl implements RepairIssueService {
 
-    @Autowired
-    private RepairIssueRepository repairIssueRepository;
+    private final RepairIssueRepository repairIssueRepository;
+    private final UserRepository userRepository;
+    private final IssueCategoryRepository issueCategoryRepository;
 
-    // 实现原有的CRUD方法
+    @Autowired
+    public RepairIssueServiceImpl(RepairIssueRepository repairIssueRepository, UserRepository userRepository,
+                                  IssueCategoryRepository issueCategoryRepository) {
+        this.repairIssueRepository = repairIssueRepository;
+        this.userRepository = userRepository;
+        this.issueCategoryRepository = issueCategoryRepository;
+    }
+
     @Override
     public List<RepairIssue> findAll() {
         return repairIssueRepository.findAll();
     }
-
+//
+//    @Override
+//    public RepairIssue findById(Integer id) {
+//        return repairIssueRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Repair issue not found"));
+//    }
+//
+//    @Override
+//    public RepairIssue update(RepairIssue repairIssue) {
+//        if (!repairIssueRepository.existsById(Math.toIntExact(repairIssue.getId()))) {
+//            throw new RuntimeException("Repair issue not found");
+//        }
+//        return repairIssueRepository.save(repairIssue);
+//    }
+//
+//    @Override
+//    public void deleteById(Integer id) {
+//        repairIssueRepository.deleteById(id);
+//    }
+//
     @Override
-    public RepairIssue findById(Integer id) {
-        return repairIssueRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Repair issue not found"));
+    public void uploadRepairIssue(UploadRepairIssueRequest request, MultipartFile imageFile, MultipartFile videoFile) {
+        RepairIssue repairIssue = new RepairIssue();
+        // 复制 request 的属性到 repairIssue
+        BeanUtils.copyProperties(request, repairIssue);
+
+        // 处理 reporter 字段（从 userId 查找 User）
+        User user = userRepository.findById(request.getReporterId())
+                .orElseThrow(() -> new NoSuchElementException("用户不存在"));
+        repairIssue.setReporter(user);
+
+        IssueCategory category = issueCategoryRepository.findById(request.getCategoryId()).
+                orElseThrow(()->new NoSuchElementException("不存在类别Id为"+request.getCategoryId()+"的报修问题"));
+        repairIssue.setCategory(category);
+
+        if (imageFile != null)
+            uploadFile(imageFile, repairIssue, 0);
+        if (videoFile != null)
+            uploadFile(videoFile, repairIssue, 1);
+        repairIssueRepository.save(repairIssue);
     }
 
-    @Override
-    public RepairIssue update(RepairIssue repairIssue) {
-        if (!repairIssueRepository.existsById(Math.toIntExact(repairIssue.getId()))) {
-            throw new RuntimeException("Repair issue not found");
-        }
-        return repairIssueRepository.save(repairIssue);
-    }
-
-    @Override
-    public void deleteById(Integer id) {
-        repairIssueRepository.deleteById(id);
-    }
-
-    @Override
-    public RepairIssue createRepairIssue(RepairIssueDTO dto, MultipartFile imageFile, MultipartFile videoFile) {
-        try {
-            RepairIssue repairIssue = new RepairIssue();
-            BeanUtils.copyProperties(dto, repairIssue);
-            if (imageFile != null)
-                upload(imageFile, repairIssue,0);
-            if (videoFile != null)
-                upload(videoFile, repairIssue,1);
-            // 设置默认字段值
-            repairIssue.setRepairIssueStart(Instant.now());
-            // 保存到数据库
-            return repairIssueRepository.save(repairIssue);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to create repair issue: " + e.getMessage(), e);
-        }
-    }
-
-    public void upload(MultipartFile imageFile,RepairIssue repairIssue,Integer type) {
+    public void uploadFile(MultipartFile imageFile, RepairIssue repairIssue, Integer type) {
         try {
             String originalFileName = imageFile.getOriginalFilename();
             String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
             String uniqueFileName = UUID.randomUUID() + fileExtension;
-            String objectName = "RepairIssueImageOrVideo/" + uniqueFileName;
+            String objectName = "IssueImageAndVideo/" + uniqueFileName;
             String result = OSSUtils.uploadFileToOSS(imageFile, objectName);
-            String fileUrl = "https://first-tekcub.oss-cn-shanghai.aliyuncs.com/" + objectName;
+            if (result.equals("failure")) {
+                throw new RuntimeException("上传文件失败");
+            }
+            String fileUrl = "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/" + objectName;
             if (type.equals(0))
                 repairIssue.setImageUrl(fileUrl);
             else
                 repairIssue.setVideoUrl(fileUrl);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to create repair issue: " + e.getMessage(), e);
+            throw new RuntimeException("上传文件失败");
         }
     }
 
     @Override
-    public RepairIssueResponseDTO getRepairIssueInfo(Integer id) {
-        RepairIssue repairIssue = findById(id);
+    public RepairIssueDTO getRepairIssueInfo(Long issueId) {
+        RepairIssue repairIssue = repairIssueRepository.findRepairIssueById(issueId)
+                .orElseThrow(()->new NoSuchElementException("该报修事件不存在"));
 
-        RepairIssueResponseDTO response = new RepairIssueResponseDTO();
-        BeanUtils.copyProperties(repairIssue, response);
-        return response;
+        return new RepairIssueDTO(repairIssue);
     }
 
     @Override
-    public List<RepairIssueResponseDTO> getRepairIssueByResidentId(Long residentId){
-        List<RepairIssue> repairIssues = repairIssueRepository.findAllByResidentID(residentId);
-        List<RepairIssueResponseDTO> responses = new ArrayList<>();
-        for (RepairIssue issue : repairIssues) {
-            RepairIssueResponseDTO response = new RepairIssueResponseDTO();
-            // 复制属性
-            BeanUtils.copyProperties(issue, response);
-            responses.add(response);
-        }
-        return responses;
-    }
+    public List<RepairIssue> getRepairIssuesByUserId(Long userId) {
+        User user = userRepository.findUserById(userId);
+        if (user == null)
+            throw new NoSuchElementException("未找到该用户");
 
-    public List<String> getAllRepairAddresses() {
-        return repairIssueRepository.findAllRepairAddress();
+        return repairIssueRepository.findAllByReporter(user);
     }
 }

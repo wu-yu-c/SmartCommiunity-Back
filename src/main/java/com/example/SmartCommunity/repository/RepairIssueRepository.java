@@ -1,16 +1,16 @@
 package com.example.SmartCommunity.repository;
 
 import com.example.SmartCommunity.model.RepairIssue;
+import com.example.SmartCommunity.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RepairIssueRepository extends JpaRepository<RepairIssue, Integer> {
-    List<RepairIssue> findAllByResidentID(Long residentId);
+    Optional<RepairIssue> findRepairIssueById(Long id);
 
-    @Query("SELECT r.repairAddress FROM RepairIssue r")
-    List<String> findAllRepairAddress();
+    List<RepairIssue> findAllByReporter(User reporter);
 }

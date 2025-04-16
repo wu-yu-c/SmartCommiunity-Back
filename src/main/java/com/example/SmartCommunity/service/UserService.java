@@ -1,20 +1,18 @@
 package com.example.SmartCommunity.service;
 
-import com.example.SmartCommunity.dto.UserDTO;
+import com.example.SmartCommunity.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
-
 public interface UserService {
-    Map<String, Object> register(String username, String userPhone, String password);
+    UserRegisterDTO register(UserRegisterRequest request);
 
-    Map<String, Object> login(String username, String userPhone, String password);
+    UserLoginDTO login(String username, String phoneNumber, String password);
+
+    UserInfoDTO getUserInfo();
 
     void changePassword(String username, String phone, String newPassword);
 
-    Map<String, Object> getUserInfo(Long userId);
+    UserInfoDTO updateUserInfo(UserUpdateRequest updateRequest);
 
-    Map<String, Object> updateUserInfo(Long userId, UserDTO userDTO);
-
-    Map<String, Object> userAvatar(Long userId, MultipartFile file);
+    UserInfoDTO userAvatar(Long userId, MultipartFile file);
 }

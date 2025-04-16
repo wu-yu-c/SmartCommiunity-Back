@@ -5,57 +5,45 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "staff", schema = "smart_community")
+@Table(name = "staff", schema = "SmartCommunity", uniqueConstraints = {
+        @UniqueConstraint(name = "staff_id_idx", columnNames = {"staff_id"})
+})
 public class Staff {
     @Id
-    @Column(name = "StaffID", nullable = false)
-    private Long staffID;
+    @Column(name = "user_id", nullable = false)
+    private Long id;
 
-    @Size(max = 100)
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "user_id", nullable = false)
+    private com.example.SmartCommunity.model.User user;
+
     @NotNull
-    @Column(name = "Name", nullable = false, length = 100)
-    private String name;
+    @Column(name = "staff_id", nullable = false)
+    private Long staffId;
 
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "Password", nullable = false)
-    private String password;
-
-    @Size(max = 100)
-    @Column(name = "Position", length = 100)
-    private String position;
-
-    @Size(max = 255)
-    @ColumnDefault("https://first-tekcub.oss-cn-shanghai.aliyuncs.com/Avatar/e6fc3672-f78c-4328-b93d-124f38a3aa35.jpg")
-    @Column(name = "Avatar")
-    private String avatar;
-
-    @Size(max = 100)
-    @NotNull
-    @Column(name = "Department", nullable = false, length = 100)
-    private String department;
-
-    @ColumnDefault("0.00")
-    @Column(name = "AverageRating", precision = 3, scale = 2)
+    @Column(name = "average_rating", precision = 3, scale = 2)
     private BigDecimal averageRating;
 
-    @Size(max = 255)
-    @Column(name = "PhoneNumber")
-    private String phoneNumber;
+    @Lob
+    @Column(name = "job_description")
+    private String jobDescription;
 
-    @ManyToOne
-    @JoinColumn(name = "AreaID", referencedColumnName = "AreaID", nullable = true)
-    private ManagementArea managementArea;
+    @Size(max = 50)
+    @Column(name = "department", length = 50)
+    private String department;
 
-    @Size(max = 100)
-    @NotNull
-    @Column(name = "JobDetails", nullable = false, length = 100)
-    private String jobDetails;
+    @Size(max = 50)
+    @Column(name = "post", length = 50)
+    private String post;
+
 }
