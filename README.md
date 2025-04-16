@@ -29,4 +29,3 @@ git clone https://github.com/wu-yu-c/SmartCommiunity-Back.git
 项目启动后，打开浏览器，访问以下链接以查看和测试 API：
 [http://localhost/swagger-ui.html](http://localhost/swagger-ui.html)  
 在这里，您可以浏览和调用项目中定义的所有 API。
-## 项目部署
