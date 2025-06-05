@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.model;
 
+import com.example.SmartCommunity.enums.RepairStatusType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -47,11 +48,9 @@ public class RepairIssue {
     @Column(name = "location")
     private String location;
 
-    @NotNull
-    @ColumnDefault("'pending'")
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status;
+    private RepairStatusType status;
 
     @Size(max = 255)
     @Column(name = "image_url")
@@ -79,8 +78,8 @@ public class RepairIssue {
     private String completionNote;
 
     @PrePersist
-    protected void onCreated(){
+    protected void onCreated() {
         this.createdTime = LocalDateTime.now();
-        this.status = "pending";
+        this.status = RepairStatusType.PENDING;
     }
 }

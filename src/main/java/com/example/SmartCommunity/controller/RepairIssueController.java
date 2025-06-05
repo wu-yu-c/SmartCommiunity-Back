@@ -1,8 +1,10 @@
 package com.example.SmartCommunity.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.alibaba.dashscope.app.Application;
 import com.example.SmartCommunity.common.response.ApiResponse;
 import com.example.SmartCommunity.dto.RepairIssueDTO;
+import com.example.SmartCommunity.dto.SubmitRepairResultRequest;
 import com.example.SmartCommunity.dto.UploadRepairIssueRequest;
 import com.example.SmartCommunity.model.RepairIssue;
 import com.example.SmartCommunity.service.RepairIssueService;
@@ -13,6 +15,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +23,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.print.attribute.standard.Media;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,15 +67,27 @@ public class RepairIssueController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "获取报修事件列表成功", response));
     }
 
-    @Operation(summary = "上传报修事件",description = "这个接口无法使用swagger进行测试，需要使用Apifox，将body的" +
-            "Content-Type设置为application/json，将image和video的Content-Type设置为multipart/form-data，才能测试成功")
+    @Operation(summary = "上传报修事件")
+    @SaCheckLogin
     @PostMapping(value = "/upload",consumes = "multipart/form-data")
     public ResponseEntity<ApiResponse<Void>> uploadRepairIssue(
-            @RequestPart(value="body") UploadRepairIssueRequest request,
+            @RequestParam(value = "issueTitle") String issueTitle,
+            @RequestParam(value = "issueDescription") String issueDescription,
+            @RequestParam(value = "location") String location,
+            @RequestParam(value = "categoryId") Long categoryId,
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam(value = "video", required = false) MultipartFile video) {
+        UploadRepairIssueRequest request = new UploadRepairIssueRequest(issueTitle, issueDescription, location, categoryId);
         repairIssueService.uploadRepairIssue(request, image, video);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED, "上传报修事件成功", null));
     }
 
+    @Operation(summary = "提交报修事件处理结果",description = "status必须是PENDING、IN_PROGRESS、COMPLETED、REJECTED中的一个")
+    @SaCheckLogin
+    @PostMapping("/submit-result")
+    public ResponseEntity<ApiResponse<Void>> submitRepairIssue(
+            @Valid @RequestBody SubmitRepairResultRequest request){
+        repairIssueService.submitRepairResult(request);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "处理结果提交成功", null));
+    }
 }

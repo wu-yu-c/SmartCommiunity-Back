@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.example.SmartCommunity.common.response.ApiResponse;
 import com.example.SmartCommunity.dto.ReviewWithStaffInfoDTO;
 import com.example.SmartCommunity.dto.ReviewRequest;
@@ -25,9 +26,10 @@ public class RatingController {
         this.ratingService = ratingService;
     }
 
-    @Operation(summary = "用户上传对员工的评价", description = "用户上传对某次服务的评价，需要的参数为用户id，服务人员的id，" +
+    @Operation(summary = "用户上传对员工的评价", description = "用户上传对某次服务的评价，需要的参数为职工的工号，" +
             "对本次服务内容的描述，对服务人员的评分以及评价的内容，上传成功后会同步更新该服务人员的平均分")
     @PostMapping()
+    @SaCheckLogin
     public ResponseEntity<ApiResponse<Void>> uploadReview(@RequestBody ReviewRequest request) {
         ratingService.uploadReview(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED, "评分上传成功", null));
@@ -43,6 +45,7 @@ public class RatingController {
 
     @Operation(summary="根据评分的编号(主码)删除评价")
     @DeleteMapping("/{id}")
+    @SaCheckLogin
     public ResponseEntity<ApiResponse<Void>> deleteEvaluationByEventID(@PathVariable Long id) {
         ratingService.deleteRatingById(id);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "删除成功", null));

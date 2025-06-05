@@ -15,4 +15,6 @@ public interface StaffRepository extends JpaRepository<Staff, Long> {
     List<Staff> findByDepartmentContainingAndUser_UserNameContaining(String department, String staffName);
 
     Staff findStaffByStaffId(@NotNull Long staffId);
+
+    List<Staff> findByDepartment(@Size(max = 50) String department);
 }

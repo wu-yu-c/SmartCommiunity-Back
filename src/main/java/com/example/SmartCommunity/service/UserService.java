@@ -14,5 +14,5 @@ public interface UserService {
 
     UserInfoDTO updateUserInfo(UserUpdateRequest updateRequest);
 
-    UserInfoDTO userAvatar(Long userId, MultipartFile file);
+    UserInfoDTO userAvatar(MultipartFile file);
 }

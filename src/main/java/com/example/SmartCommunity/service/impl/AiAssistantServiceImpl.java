@@ -88,7 +88,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
             switch (msg.getContentType()) {
                 case 1 -> contents.add(Map.of("text", msg.getContent()));
                 case 2 -> contents.add(Map.of("image", msg.getContent()));
-                case 3 -> contents.add(Map.of("video", msg.getContent())); // 视频扩展
+                case 3 -> contents.add(Map.of("video", msg.getContent()));
             }
             messages.add(MultiModalMessage.builder()
                     .role(msg.getSender() == SenderType.USER.getCode() ? Role.USER.getValue() : Role.ASSISTANT.getValue())
@@ -131,18 +131,11 @@ public class AiAssistantServiceImpl implements AiAssistantService {
     }
 
     private String uploadFile(MultipartFile file) {
-        try {
-            String originalFileName = file.getOriginalFilename();
-            String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            String uniqueFileName = UUID.randomUUID() + fileExtension;
-            String objectName = "AiChatFile/" + uniqueFileName;
-            String result = OSSUtils.uploadFileToOSS(file, objectName);
-            if (result.equals("failure")) {
-                throw new RuntimeException("上传文件失败");
-            }
-            return "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/" + objectName;
-        } catch (Exception e) {
-            throw new RuntimeException("上传文件失败");
-        }
+        String originalFileName = file.getOriginalFilename();
+        String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        String uniqueFileName = UUID.randomUUID() + fileExtension;
+        String objectName = "AiChatFile/" + uniqueFileName;
+        OSSUtils.uploadFileToOSS(file, objectName);
+        return "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/" + objectName;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.example.SmartCommunity.dto.ReviewRequest;
 import com.example.SmartCommunity.dto.ReviewWithStaffInfoDTO;
 import com.example.SmartCommunity.model.Staff;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Service
 public class RatingServiceImpl implements RatingService {
@@ -41,9 +43,14 @@ public class RatingServiceImpl implements RatingService {
                 .orElseThrow(() -> new NoSuchElementException("未找到该职工"));
         rating.setRatedStaff(staff);
 
-        User user = userRepository.findById(request.getRaterId())
-                .orElseThrow(() -> new NoSuchElementException("未找到该用户"));
+        User user = userRepository.findUserById(StpUtil.getLoginIdAsLong());
         rating.setRater(user);
+
+        if (Objects.equals(staff.getId(), user.getId()))
+            throw new SecurityException("不可以对自己进行评分");
+
+        if (ratingRepository.existsByRatedStaffAndRater(staff, user))
+            throw new SecurityException("不可以对同一职工重复评分");
 
         ratingRepository.save(rating);
         updateAverageRating(request.getStaffId());
@@ -62,7 +69,10 @@ public class RatingServiceImpl implements RatingService {
     }
 
     public void deleteRatingById(Long id) {
-        StaffRating rating = ratingRepository.findById(id).orElseThrow(()->new NoSuchElementException("未找到该评价"));
+        Long userId = StpUtil.getLoginIdAsLong();
+        StaffRating rating = ratingRepository.findById(id).orElseThrow(() -> new NoSuchElementException("未找到该评价"));
+        if(!rating.getRater().getId().equals(userId))
+            throw new SecurityException("您无权删除他人的评价");
         ratingRepository.delete(rating);
         updateAverageRating(rating.getRatedStaff().getStaffId());
     }

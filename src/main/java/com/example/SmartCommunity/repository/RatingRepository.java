@@ -2,7 +2,10 @@ package com.example.SmartCommunity.repository;
 
 import com.example.SmartCommunity.dto.ReviewWithStaffInfoDTO;
 import com.example.SmartCommunity.dto.ReviewDTO;
+import com.example.SmartCommunity.model.Staff;
 import com.example.SmartCommunity.model.StaffRating;
+import com.example.SmartCommunity.model.User;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +28,6 @@ public interface RatingRepository extends JpaRepository<StaffRating, Long> {
             "FROM StaffRating e "+
             "WHERE e.ratedStaff.staffId = :staffId")
     List<ReviewDTO> findServicesByStaffId(@Param("staffId") Long staffId);
+
+    boolean existsByRatedStaffAndRater(@NotNull Staff ratedStaff, @NotNull User rater);
 }

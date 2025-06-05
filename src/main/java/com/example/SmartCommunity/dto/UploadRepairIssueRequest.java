@@ -10,9 +10,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class UploadRepairIssueRequest {
-    @NotNull(message = "上传者不能为空")
-    private Long reporterId;
-
     @NotBlank(message="事件标题不能为空")
     private String issueTitle;
 

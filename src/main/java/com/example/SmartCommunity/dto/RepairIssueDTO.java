@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.dto;
 
+import com.example.SmartCommunity.enums.RepairStatusType;
 import com.example.SmartCommunity.model.RepairIssue;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
@@ -29,7 +30,7 @@ public class RepairIssueDTO {
     private String location;
 
     @JsonView(BasicView.class)
-    private String status;
+    private RepairStatusType status;
 
     @JsonView(BasicView.class)
     private LocalDateTime issueDate;

@@ -118,40 +118,35 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserInfoDTO userAvatar(Long userId, MultipartFile file) {
+    public UserInfoDTO userAvatar(MultipartFile file) {
         // 1. 获取用户信息
-        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("用户不存在"));
+        Long userId = StpUtil.getLoginIdAsLong();
+        User user = userRepository.findUserById(userId);
         String defaultAvatar = "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/Avatar/defaultAvatar.jpg";
 
-        try {
-            // 2. 处理旧头像
-            String oldAvatarUrl = user.getAvatar();
-            if (oldAvatarUrl != null && !oldAvatarUrl.equals(defaultAvatar)) {
-                // 删除旧头像
-                String oldAvatarKey = oldAvatarUrl.replace("https://1st-bucket.oss-cn-shanghai.aliyuncs.com/", "");
-                OSSUtils.deleteFile(oldAvatarKey);
-            }
-
-            // 3. 上传新头像
-            // 使用 UUID 生成唯一文件名
-            String originalFileName = file.getOriginalFilename();
-            String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            String uniqueFileName = UUID.randomUUID() + fileExtension;
-            String objectName = "Avatar/" + uniqueFileName;
-            String newAvatarUrl = OSSUtils.uploadFileToOSS(file, objectName);
-
-            if (newAvatarUrl.equals("failure")) {
-                throw new RuntimeException("上传新头像失败");
-            }
-
-            // 4. 更新用户信息
-            String fileUrl = "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/" + objectName;
-            user.setAvatar(fileUrl);
-            userRepository.save(user);
-
-            return new UserInfoDTO(user);
-        } catch (Exception e) {
-            throw new RuntimeException("更新头像失败，请稍后重试");
+        // 2. 处理旧头像
+        String oldAvatarUrl = user.getAvatar();
+        if (oldAvatarUrl != null && !oldAvatarUrl.equals(defaultAvatar)) {
+            // 删除旧头像
+            String oldAvatarKey = oldAvatarUrl.replace("https://1st-bucket.oss-cn-shanghai.aliyuncs.com/", "");
+            OSSUtils.deleteFile(oldAvatarKey);
         }
+
+        // 3. 上传新头像
+        String originalFileName = file.getOriginalFilename();
+        String fileExtension = null;
+        if (originalFileName != null) {
+            fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        }
+        String uniqueFileName = UUID.randomUUID() + fileExtension;
+        String objectName = "Avatar/" + uniqueFileName;
+        OSSUtils.uploadFileToOSS(file, objectName);
+
+        // 4. 更新用户信息
+        String fileUrl = "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/" + objectName;
+        user.setAvatar(fileUrl);
+        userRepository.save(user);
+
+        return new UserInfoDTO(user);
     }
 }

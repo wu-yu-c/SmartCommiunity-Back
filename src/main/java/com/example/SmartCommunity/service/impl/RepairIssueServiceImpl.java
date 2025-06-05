@@ -1,24 +1,29 @@
 package com.example.SmartCommunity.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.example.SmartCommunity.dto.RepairIssueDTO;
+import com.example.SmartCommunity.dto.SubmitRepairResultRequest;
 import com.example.SmartCommunity.dto.UploadRepairIssueRequest;
+import com.example.SmartCommunity.enums.RepairStatusType;
 import com.example.SmartCommunity.model.IssueCategory;
 import com.example.SmartCommunity.model.RepairIssue;
+import com.example.SmartCommunity.model.Staff;
 import com.example.SmartCommunity.model.User;
 import com.example.SmartCommunity.repository.IssueCategoryRepository;
 import com.example.SmartCommunity.repository.RepairIssueRepository;
+import com.example.SmartCommunity.repository.StaffRepository;
 import com.example.SmartCommunity.repository.UserRepository;
 import com.example.SmartCommunity.service.RepairIssueService;
 import com.example.SmartCommunity.util.OSSUtils;
-import jdk.jfr.Category;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class RepairIssueServiceImpl implements RepairIssueService {
@@ -26,39 +31,22 @@ public class RepairIssueServiceImpl implements RepairIssueService {
     private final RepairIssueRepository repairIssueRepository;
     private final UserRepository userRepository;
     private final IssueCategoryRepository issueCategoryRepository;
+    private final StaffRepository staffRepository;
 
     @Autowired
     public RepairIssueServiceImpl(RepairIssueRepository repairIssueRepository, UserRepository userRepository,
-                                  IssueCategoryRepository issueCategoryRepository) {
+                                  IssueCategoryRepository issueCategoryRepository, StaffRepository staffRepository) {
         this.repairIssueRepository = repairIssueRepository;
         this.userRepository = userRepository;
         this.issueCategoryRepository = issueCategoryRepository;
+        this.staffRepository = staffRepository;
     }
 
     @Override
     public List<RepairIssue> findAll() {
         return repairIssueRepository.findAll();
     }
-//
-//    @Override
-//    public RepairIssue findById(Integer id) {
-//        return repairIssueRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Repair issue not found"));
-//    }
-//
-//    @Override
-//    public RepairIssue update(RepairIssue repairIssue) {
-//        if (!repairIssueRepository.existsById(Math.toIntExact(repairIssue.getId()))) {
-//            throw new RuntimeException("Repair issue not found");
-//        }
-//        return repairIssueRepository.save(repairIssue);
-//    }
-//
-//    @Override
-//    public void deleteById(Integer id) {
-//        repairIssueRepository.deleteById(id);
-//    }
-//
+
     @Override
     public void uploadRepairIssue(UploadRepairIssueRequest request, MultipartFile imageFile, MultipartFile videoFile) {
         RepairIssue repairIssue = new RepairIssue();
@@ -66,7 +54,7 @@ public class RepairIssueServiceImpl implements RepairIssueService {
         BeanUtils.copyProperties(request, repairIssue);
 
         // 处理 reporter 字段（从 userId 查找 User）
-        User user = userRepository.findById(request.getReporterId())
+        User user = userRepository.findById(StpUtil.getLoginIdAsLong())
                 .orElseThrow(() -> new NoSuchElementException("用户不存在"));
         repairIssue.setReporter(user);
 
@@ -79,26 +67,21 @@ public class RepairIssueServiceImpl implements RepairIssueService {
         if (videoFile != null)
             uploadFile(videoFile, repairIssue, 1);
         repairIssueRepository.save(repairIssue);
+
+        assignRepairIssueToStaff(repairIssue);
     }
 
     public void uploadFile(MultipartFile imageFile, RepairIssue repairIssue, Integer type) {
-        try {
-            String originalFileName = imageFile.getOriginalFilename();
-            String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            String uniqueFileName = UUID.randomUUID() + fileExtension;
-            String objectName = "IssueImageAndVideo/" + uniqueFileName;
-            String result = OSSUtils.uploadFileToOSS(imageFile, objectName);
-            if (result.equals("failure")) {
-                throw new RuntimeException("上传文件失败");
-            }
-            String fileUrl = "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/" + objectName;
-            if (type.equals(0))
-                repairIssue.setImageUrl(fileUrl);
-            else
-                repairIssue.setVideoUrl(fileUrl);
-        } catch (Exception e) {
-            throw new RuntimeException("上传文件失败");
-        }
+        String originalFileName = imageFile.getOriginalFilename();
+        String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        String uniqueFileName = UUID.randomUUID() + fileExtension;
+        String objectName = "IssueImageAndVideo/" + uniqueFileName;
+        OSSUtils.uploadFileToOSS(imageFile, objectName);
+        String fileUrl = "https://1st-bucket.oss-cn-shanghai.aliyuncs.com/" + objectName;
+        if (type.equals(0))
+            repairIssue.setImageUrl(fileUrl);
+        else
+            repairIssue.setVideoUrl(fileUrl);
     }
 
     @Override
@@ -116,5 +99,41 @@ public class RepairIssueServiceImpl implements RepairIssueService {
             throw new NoSuchElementException("未找到该用户");
 
         return repairIssueRepository.findAllByReporter(user);
+    }
+
+    @Override
+    @Transactional
+    public void submitRepairResult(SubmitRepairResultRequest request){
+        Long userId = StpUtil.getLoginIdAsLong();
+        Staff staff = staffRepository.findById(userId).
+                orElseThrow(()->new AccessDeniedException("没有权限：您不是员工！"));
+        RepairIssue issue = repairIssueRepository.findRepairIssueById(request.getIssueId())
+                .orElseThrow(() -> new NoSuchElementException("报修事件不存在"));
+        if (issue.getAssigned() == null || !issue.getAssigned().getStaffId().equals(staff.getStaffId())) {
+            throw new AccessDeniedException("你无权限处理该事件");
+        }
+        issue.setStatus(request.getStatus());
+        issue.setCompletedTime(LocalDateTime.now());
+        if(!request.getCompletionNote().isBlank())
+            issue.setCompletionNote(request.getCompletionNote());
+        repairIssueRepository.save(issue);
+    }
+
+    private void assignRepairIssueToStaff(RepairIssue issue) {
+        String department = issue.getCategory().getDepartment();
+        List<Staff> staffList = staffRepository.findByDepartment(department);
+
+        if (staffList.isEmpty()) {
+            throw new NoSuchElementException("该部门暂无员工");
+        }
+
+        Collection<String> targetStatuses = List.of(RepairStatusType.COMPLETED.name(), RepairStatusType.REJECTED.name());
+        Staff assigned = staffList.stream()
+                .min(Comparator.comparing(staff ->
+                        repairIssueRepository.countByAssignedAndStatusNotIn(staff,targetStatuses)))
+                .orElseThrow(() -> new RuntimeException("目前无法分配任务"));
+
+        issue.setAssigned(assigned);
+        repairIssueRepository.save(issue);
     }
 }

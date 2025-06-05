@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.common.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.dashscope.exception.UploadFileException;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -88,7 +90,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponse<Void> handleGenericException(RuntimeException e) {
-        return ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, "发生内部错误：" + e.getMessage(), null);
+        return ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), null);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponse<Void> handleAccessDeniedException(AccessDeniedException ex) {
+        return ApiResponse.error(HttpStatus.FORBIDDEN, ex.getMessage(),null);
     }
 
     /**
@@ -118,5 +126,11 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponse<Void> handleApiException(ApiException e) {
         return ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, "调用 DashScope API 失败：" + e.getMessage(), null);
+    }
+
+    @ExceptionHandler(NotLoginException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse<Void> handleNotLoginException() {
+        return ApiResponse.error(HttpStatus.UNAUTHORIZED,"未登录或登录信息已过期，请登录后重试",null);
     }
 }
