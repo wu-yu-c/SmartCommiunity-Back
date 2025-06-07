@@ -18,4 +18,8 @@ public interface RepairIssueRepository extends JpaRepository<RepairIssue, Intege
     List<RepairIssue> findAllByReporter(User reporter);
 
     @NotNull <U> U countByAssignedAndStatusNotIn(Staff assigned, Collection<String> statuses);
+
+    boolean existsById(Long id);
+
+    void deleteById(Long id);
 }

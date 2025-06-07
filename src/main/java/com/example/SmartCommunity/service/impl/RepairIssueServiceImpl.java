@@ -93,6 +93,13 @@ public class RepairIssueServiceImpl implements RepairIssueService {
     }
 
     @Override
+    public void deleteRepairById(Long id){
+        if(!repairIssueRepository.existsById(id))
+            throw new NoSuchElementException("该报修事件不存在");
+        repairIssueRepository.deleteById(id);
+    }
+
+    @Override
     public List<RepairIssue> getRepairIssuesByUserId() {
         Long userId = StpUtil.getLoginIdAsLong();
         User user = userRepository.findUserById(userId);

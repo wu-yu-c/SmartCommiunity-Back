@@ -78,6 +78,14 @@ public class RepairIssueController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED, "上传报修事件成功", null));
     }
 
+    @Operation(summary = "删除报修事件", description = "根据 ID 删除指定的报修事件")
+    @SaCheckLogin
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteRepair(@PathVariable Long id) {
+        repairIssueService.deleteRepairById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK,"删除成功",null));
+    }
+
     @Operation(summary = "提交报修事件处理结果", description = "status必须是PENDING、IN_PROGRESS、COMPLETED、REJECTED中的一个")
     @SaCheckLogin
     @PostMapping("/submit-result")

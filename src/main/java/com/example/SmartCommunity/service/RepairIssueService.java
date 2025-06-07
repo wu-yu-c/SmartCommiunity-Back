@@ -18,4 +18,6 @@ public interface RepairIssueService {
     List<RepairIssue> getRepairIssuesByUserId();
 
     void submitRepairResult(SubmitRepairResultRequest request);
+
+    void deleteRepairById(Long id);
 }

@@ -40,7 +40,7 @@ public class StaffInfoDTO {
 
     public StaffInfoDTO(Staff staff) {
         userId = staff.getUser().getId();
-        staffId = staff.getId();
+        staffId = staff.getStaffId();
         staffName = staff.getUser().getUserName();
         phoneNumber = staff.getUser().getPhoneNumber();
         avatar = staff.getUser().getAvatar();
