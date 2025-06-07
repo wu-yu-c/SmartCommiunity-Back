@@ -4,7 +4,6 @@ import com.example.SmartCommunity.dto.RepairIssueDTO;
 import com.example.SmartCommunity.dto.SubmitRepairResultRequest;
 import com.example.SmartCommunity.dto.UploadRepairIssueRequest;
 import com.example.SmartCommunity.model.RepairIssue;
-import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -16,7 +15,7 @@ public interface RepairIssueService {
 
     RepairIssueDTO getRepairIssueInfo(Long issueId);
 
-    List<RepairIssue> getRepairIssuesByUserId(Long userId);
+    List<RepairIssue> getRepairIssuesByUserId();
 
     void submitRepairResult(SubmitRepairResultRequest request);
 }

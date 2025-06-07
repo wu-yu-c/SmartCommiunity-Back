@@ -35,6 +35,9 @@ public class UserInfoDTO {
     @JsonView({UpdatedInfoView.class, UpdatedAvatarView.class})
     private LocalDateTime updateTime;
 
+    @JsonView(BasicView.class)
+    private StaffInfoDTO staffInfo;
+
     public UserInfoDTO(User user) {
         userId = user.getId();
         userName = user.getUserName();

@@ -1,6 +1,7 @@
 package com.example.SmartCommunity.repository;
 
 import com.example.SmartCommunity.model.Staff;
+import com.example.SmartCommunity.model.User;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,6 @@ public interface StaffRepository extends JpaRepository<Staff, Long> {
     Staff findStaffByStaffId(@NotNull Long staffId);
 
     List<Staff> findByDepartment(@Size(max = 50) String department);
+
+    Staff findByUser(User user);
 }

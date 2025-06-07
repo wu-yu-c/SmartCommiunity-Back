@@ -10,11 +10,12 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class StaffInfoDTO {
-    public interface BasicView{}
+    public interface BasicView {
+    }
 
     private Long userId;
 
-    @JsonView(BasicView.class)
+    @JsonView({BasicView.class, UserInfoDTO.BasicView.class})
     private Long staffId;
 
     @JsonView(BasicView.class)
@@ -25,15 +26,16 @@ public class StaffInfoDTO {
     @JsonView(BasicView.class)
     private String avatar;
 
-    @JsonView(BasicView.class)
+    @JsonView({BasicView.class, UserInfoDTO.BasicView.class})
     private String department;
 
-    @JsonView(BasicView.class)
+    @JsonView({BasicView.class, UserInfoDTO.BasicView.class})
     private String post;
 
+    @JsonView(UserInfoDTO.BasicView.class)
     private String jobDescription;
 
-    @JsonView(BasicView.class)
+    @JsonView({BasicView.class, UserInfoDTO.BasicView.class})
     private BigDecimal averageRating;
 
     public StaffInfoDTO(Staff staff) {

@@ -93,7 +93,8 @@ public class RepairIssueServiceImpl implements RepairIssueService {
     }
 
     @Override
-    public List<RepairIssue> getRepairIssuesByUserId(Long userId) {
+    public List<RepairIssue> getRepairIssuesByUserId() {
+        Long userId = StpUtil.getLoginIdAsLong();
         User user = userRepository.findUserById(userId);
         if (user == null)
             throw new NoSuchElementException("未找到该用户");

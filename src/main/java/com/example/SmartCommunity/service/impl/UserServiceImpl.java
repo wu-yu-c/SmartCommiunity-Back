@@ -1,7 +1,9 @@
 package com.example.SmartCommunity.service.impl;
 
 import com.example.SmartCommunity.dto.*;
+import com.example.SmartCommunity.model.Staff;
 import com.example.SmartCommunity.model.User;
+import com.example.SmartCommunity.repository.StaffRepository;
 import com.example.SmartCommunity.repository.UserRepository;
 import com.example.SmartCommunity.service.UserService;
 import com.example.SmartCommunity.util.OSSUtils;
@@ -22,14 +24,16 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StaffRepository staffRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, StaffRepository staffRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.staffRepository = staffRepository;
     }
 
     @Override
@@ -77,7 +81,16 @@ public class UserServiceImpl implements UserService {
     public UserInfoDTO getUserInfo() {
         Long userId = StpUtil.getLoginIdAsLong();
         User user = userRepository.findUserById(userId);
-        return new UserInfoDTO(user);
+        UserInfoDTO dto = new UserInfoDTO(user);
+        if (user.getUserType() != null && user.getUserType() == 2) {
+            Staff staff = staffRepository.findByUser(user);
+            if (staff == null)
+                throw new NoSuchElementException("该用户未绑定职工信息");
+
+            StaffInfoDTO staffInfoDTO = new StaffInfoDTO(staff);
+            dto.setStaffInfo(staffInfoDTO);
+        }
+        return dto;
     }
 
     @Override
