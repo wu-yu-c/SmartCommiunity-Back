@@ -51,7 +51,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
     }
 
     @Transactional
-    public Object processMultiModalInput(Long sessionId,Long userId,String text, MultipartFile file)
+    public Map<String, Object> processMultiModalInput(Long sessionId,Long userId,String text, MultipartFile file)
             throws NoApiKeyException, UploadFileException, ApiException, InputRequiredException {
         ChatSession chatSession;
         if(sessionId == null) {
@@ -111,7 +111,10 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         chatSession.setLastUpdatedTime(LocalDateTime.now());
         chatSessionRepository.save(chatSession);
 
-        return aiResponse;
+        Map<String, Object> response = new HashMap<>();
+        response.put("sessionId", chatSession.getId());
+        response.put("aiResponse", aiResponse);
+        return response;
     }
 
     private String generateTitle(String prompt) throws NoApiKeyException, InputRequiredException {
