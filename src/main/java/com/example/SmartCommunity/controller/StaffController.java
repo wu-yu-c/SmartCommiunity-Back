@@ -3,6 +3,7 @@ package com.example.SmartCommunity.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.example.SmartCommunity.common.response.ApiResponse;
 import com.example.SmartCommunity.dto.*;
+import com.example.SmartCommunity.repository.StaffRepository;
 import com.example.SmartCommunity.service.RepairIssueService;
 import com.example.SmartCommunity.service.StaffService;
 import com.example.SmartCommunity.model.Staff;
@@ -28,11 +29,13 @@ public class StaffController {
 
     private final StaffService staffService;
     private final RepairIssueService repairIssueService;
+    private final StaffRepository staffRepository;
 
     @Autowired
-    public StaffController(StaffService staffService, RepairIssueService repairIssueService) {
+    public StaffController(StaffService staffService, RepairIssueService repairIssueService, StaffRepository staffRepository) {
         this.staffService = staffService;
         this.repairIssueService = repairIssueService;
+        this.staffRepository = staffRepository;
     }
 
     @Operation(summary = "通过工号获取职工信息")
@@ -42,12 +45,16 @@ public class StaffController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "获取职工信息成功", response));
     }
 
-    @JsonView(StaffInfoDTO.RatingView.class)
+    @JsonView(StaffInfoDTO.BasicView.class)
     @Operation(summary = "获取工作人员列表", description = "返回工作人员列表，属性包括id、姓名、职位、头像、部门、平均分，以及当前用户对其评价")
     @GetMapping("/staffList")
     @SaCheckLogin
     public ResponseEntity<ApiResponse<List<StaffInfoDTO>>> getStaffList() {
-        List<StaffInfoDTO> response = staffService.getAllStaff();
+//        List<StaffInfoDTO> response = staffService.getAllStaff();
+        List<Staff> staff = staffRepository.findAll();
+        List<StaffInfoDTO> response = staff.stream()
+                .map(StaffInfoDTO::new)
+                .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "职工列表获取成功", response));
     }
 
