@@ -20,4 +20,6 @@ public interface RepairIssueService {
     void submitRepairResult(SubmitRepairResultRequest request);
 
     void deleteRepairById(Long id);
+
+    List<RepairIssueDTO> getTasksForCurrentStaff();
 }

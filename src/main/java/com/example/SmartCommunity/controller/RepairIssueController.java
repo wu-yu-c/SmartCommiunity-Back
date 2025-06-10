@@ -52,7 +52,7 @@ public class RepairIssueController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "获取详细信息成功", response));
     }
 
-    @Operation(summary = "通过用户ID查找某个用户上传的所有报修事件", description = "返回报修事件的详细信息")
+    @Operation(summary = "查找当前用户上传的所有报修事件", description = "返回报修事件的详细信息")
     @GetMapping("/user-issues")
     @SaCheckLogin
     public ResponseEntity<ApiResponse<List<RepairIssueDTO>>> getResidentById() {

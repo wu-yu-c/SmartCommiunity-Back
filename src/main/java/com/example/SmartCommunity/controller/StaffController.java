@@ -1,7 +1,9 @@
 package com.example.SmartCommunity.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.example.SmartCommunity.common.response.ApiResponse;
 import com.example.SmartCommunity.dto.*;
+import com.example.SmartCommunity.service.RepairIssueService;
 import com.example.SmartCommunity.service.StaffService;
 import com.example.SmartCommunity.model.Staff;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -25,13 +27,15 @@ import java.util.Map;
 public class StaffController {
 
     private final StaffService staffService;
+    private final RepairIssueService repairIssueService;
 
     @Autowired
-    public StaffController(StaffService staffService) {
+    public StaffController(StaffService staffService, RepairIssueService repairIssueService) {
         this.staffService = staffService;
+        this.repairIssueService = repairIssueService;
     }
 
-    @Operation(summary="通过工号获取职工信息")
+    @Operation(summary = "通过工号获取职工信息")
     @GetMapping("/{staffId}")
     public ResponseEntity<ApiResponse<StaffInfoDTO>> getStaffById(@PathVariable @NotNull(message = "参数不能为空") Long staffId) {
         StaffInfoDTO response = staffService.getStaffById(staffId);
@@ -39,7 +43,7 @@ public class StaffController {
     }
 
     @JsonView(StaffInfoDTO.BasicView.class)
-    @Operation(summary = "获取工作人员列表",description = "返回工作人员列表，属性包括id、姓名、职位、头像、部门、平均分")
+    @Operation(summary = "获取工作人员列表", description = "返回工作人员列表，属性包括id、姓名、职位、头像、部门、平均分")
     @GetMapping("/staffList")
     public ResponseEntity<ApiResponse<List<StaffInfoDTO>>> getStaffList() {
         List<Staff> staff = staffService.getAllStaff();
@@ -50,7 +54,7 @@ public class StaffController {
     }
 
     @JsonView(StaffInfoDTO.BasicView.class)
-    @Operation(summary = "根据人名和部门筛选工作人员",description = "从输入的人名和部门筛选符合条件的工作人员，返回人员列表")
+    @Operation(summary = "根据人名和部门筛选工作人员", description = "从输入的人名和部门筛选符合条件的工作人员，返回人员列表")
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Map<String, Object>>> searchStaffList(
             @RequestParam(required = false) String staffName,
@@ -60,14 +64,23 @@ public class StaffController {
                 .map(StaffInfoDTO::new)
                 .toList();
 
-        Map<String, Object> result = Map.of("staffCount", response.size(),"staffList",response);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK,"职工列表获取成功",result));
+        Map<String, Object> result = Map.of("staffCount", response.size(), "staffList", response);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "职工列表获取成功", result));
     }
 
     @Operation(summary = "根据工作人员id获取其基本信息和他收到的所有评分信息")
-    @GetMapping("/{staffId}/rating-info")
-    public ResponseEntity<ApiResponse<StaffWithReviewsDTO>> getEventEvaluationByStaffId(@PathVariable Long staffId) {
-        StaffWithReviewsDTO response = staffService.getStaffWithServices(staffId);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK,"信息获取成功",response));
+    @SaCheckLogin
+    @GetMapping("/rating-info")
+    public ResponseEntity<ApiResponse<StaffWithReviewsDTO>> getEventEvaluationByStaffId() {
+        StaffWithReviewsDTO response = staffService.getStaffWithServices();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "信息获取成功", response));
+    }
+
+    @Operation(summary = "获取当前登录的工作人员的任务列表", description = "按照任务分配的时间由近到远排序，且优先展示未处理和处理中的报修")
+    @SaCheckLogin
+    @GetMapping("/assigned-issues")
+    public ResponseEntity<ApiResponse<List<RepairIssueDTO>>> getMyRepairIssues() {
+        List<RepairIssueDTO> tasks = repairIssueService.getTasksForCurrentStaff();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "任务列表获取成功", tasks));
     }
 }

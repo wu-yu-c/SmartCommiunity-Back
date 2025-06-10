@@ -1,5 +1,6 @@
 package com.example.SmartCommunity.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.example.SmartCommunity.dto.ReviewDTO;
 import com.example.SmartCommunity.dto.StaffInfoDTO;
 import com.example.SmartCommunity.dto.StaffWithReviewsDTO;
@@ -46,11 +47,12 @@ public class StaffServiceImpl implements StaffService {
                 name != null ? name : "");
     }
 
-    public StaffWithReviewsDTO getStaffWithServices(Long staffId) {
-        Staff staff = staffRepository.findByStaffId(staffId).orElseThrow(() -> new NoSuchElementException("未找到该职工"));
+    public StaffWithReviewsDTO getStaffWithServices() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        Staff staff = staffRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("未找到该职工"));
 
         // 获取工作人员的评分信息
-        List<ReviewDTO> reviews = ratingRepository.findServicesByStaffId(staffId);
+        List<ReviewDTO> reviews = ratingRepository.findServicesByStaffId(staff.getStaffId());
 
         return new StaffWithReviewsDTO(staff, reviews);
     }

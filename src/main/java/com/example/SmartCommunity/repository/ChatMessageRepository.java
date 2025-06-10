@@ -12,4 +12,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     List<ChatMessage> findTop10BySessionOrderByCreatedTimeAsc(@NotNull ChatSession session);
 
     List<ChatMessage> findBySessionAndContentTypeIn(@NotNull ChatSession session, Collection<Byte> contentTypes);
+
+    List<ChatMessage> findBySession_IdOrderByCreatedTimeAsc(Long sessionId);
 }

@@ -16,5 +16,5 @@ public interface StaffService {
      */
     List<Staff> searchStaff(String staffName, String department);
 
-    StaffWithReviewsDTO getStaffWithServices(Long staffId);
+    StaffWithReviewsDTO getStaffWithServices();
 }

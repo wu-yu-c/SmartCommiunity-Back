@@ -22,4 +22,6 @@ public interface RepairIssueRepository extends JpaRepository<RepairIssue, Intege
     boolean existsById(Long id);
 
     void deleteById(Long id);
+
+    List<RepairIssue> findByAssigned(Staff assigned);
 }

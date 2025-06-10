@@ -6,6 +6,10 @@ import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.dashscope.exception.UploadFileException;
 import com.example.SmartCommunity.common.response.ApiResponse;
+import com.example.SmartCommunity.dto.ChatMessageDTO;
+import com.example.SmartCommunity.dto.ChatSessionDTO;
+import com.example.SmartCommunity.model.ChatSession;
+import com.example.SmartCommunity.service.ChatMessageService;
 import com.example.SmartCommunity.service.ChatSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import com.example.SmartCommunity.service.AiAssistantService;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Tag(name="AI助手接口")
 @RestController
 @RequestMapping("/api/ai-assistant")
@@ -23,20 +29,23 @@ public class AiAssistantController {
 
     private final AiAssistantService aiAssistantService;
     private final ChatSessionService chatSessionService;
+    private final ChatMessageService chatMessageService;
+
     @Autowired
-    public AiAssistantController(AiAssistantService aiAssistantService, ChatSessionService chatSessionService) {
+    public AiAssistantController(AiAssistantService aiAssistantService, ChatSessionService chatSessionService, ChatMessageService chatMessageService) {
         this.aiAssistantService = aiAssistantService;
         this.chatSessionService = chatSessionService;
+        this.chatMessageService = chatMessageService;
     }
 
-    @Operation(summary = "AI对话接口",description = "上传的图像大小不得超过10MB，上传的视频时长不得超过40s。" +
+    @Operation(summary = "AI对话接口", description = "上传的图像大小不得超过10MB，上传的视频时长不得超过40s。" +
             "使用swagger测试时，不传入sessionId默认会创建一个新的session，所以想使用多轮对话必须在第二次对话时传入sessionId。" +
             "此外，由于免费额度有限，多轮对话只会读取该session下的最近10条消息记录，太久远的消息会被忽略。")
     @SaCheckLogin
     @PostMapping(value = "/chat", consumes = "multipart/form-data")
-    public ResponseEntity<ApiResponse<?>> chat(@RequestParam(value = "sessionId",required = false) Long sessionId,
-            @RequestParam("text") String text,
-            @RequestParam(value = "file", required = false) MultipartFile file)
+    public ResponseEntity<ApiResponse<?>> chat(@RequestParam(value = "sessionId", required = false) Long sessionId,
+                                               @RequestParam("text") String text,
+                                               @RequestParam(value = "file", required = false) MultipartFile file)
             throws NoApiKeyException, UploadFileException, ApiException {
         Long userId = StpUtil.getLoginIdAsLong();
         Object response;
@@ -48,12 +57,30 @@ public class AiAssistantController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "获取AI助手响应成功", response));
     }
 
-    @Operation(summary = "通过会话Id删除会话",description = "删除会话后，该会话下的所有message和在OSS中存储的图片/视频都会被同步删除")
+    @Operation(summary = "通过会话Id删除会话", description = "删除会话后，该会话下的所有message和在OSS中存储的图片/视频都会被同步删除")
     @SaCheckLogin
     @DeleteMapping("/session_id")
     public ResponseEntity<ApiResponse<Void>> deleteSession(
-            @RequestParam(value = "sessionId",required = false) Long sessionId) {
+            @RequestParam(value = "sessionId", required = false) Long sessionId) {
         chatSessionService.deleteSessionById(sessionId);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK,"删除会话成功",null));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "删除会话成功", null));
+    }
+
+    @Operation(summary = "获取当前用户的历史会话列表",description = "按最后更新时间由近到远返回")
+    @SaCheckLogin
+    @GetMapping("/sessions")
+    public ResponseEntity<ApiResponse<List<ChatSessionDTO>>> getSessions() {
+        List<ChatSessionDTO> sessions = chatSessionService.getUserChatSessions();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "获取成功", sessions));
+    }
+
+    @Operation(summary = "获取某条会话下的所有历史信息",description = "按顺序返回，返回顺序即为对话顺序，如果用户上传了文件，返回的content则为文件的url")
+    @SaCheckLogin
+    @GetMapping("/{sessionId}/messages")
+    public ResponseEntity<ApiResponse<List<ChatMessageDTO>>> getMessagesBySession(
+            @PathVariable Long sessionId) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        List<ChatMessageDTO> messages = chatMessageService.getMessagesBySessionId(sessionId, userId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "获取成功", messages));
     }
 }

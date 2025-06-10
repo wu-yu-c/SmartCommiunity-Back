@@ -1,5 +1,7 @@
 package com.example.SmartCommunity.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
+import com.example.SmartCommunity.dto.ChatSessionDTO;
 import com.example.SmartCommunity.enums.ContentType;
 import com.example.SmartCommunity.model.ChatMessage;
 import com.example.SmartCommunity.model.ChatSession;
@@ -8,6 +10,7 @@ import com.example.SmartCommunity.repository.ChatSessionRepository;
 import com.example.SmartCommunity.service.ChatSessionService;
 import com.example.SmartCommunity.util.OSSUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,5 +39,12 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             OSSUtils.deleteFile(fileUrl);
         }
         chatSessionRepository.delete(session);
+    }
+
+    @Override
+    public List<ChatSessionDTO> getUserChatSessions(){
+        Long userId = StpUtil.getLoginIdAsLong();
+        List<ChatSession> sessions = chatSessionRepository.findByUser_IdOrderByLastUpdatedTimeDesc(userId);
+        return sessions.stream().map(ChatSessionDTO::new).toList();
     }
 }

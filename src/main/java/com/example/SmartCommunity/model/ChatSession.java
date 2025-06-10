@@ -36,11 +36,16 @@ public class ChatSession {
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime;
 
+    @NotNull
+    @Column(name = "last_updated_time", nullable = false)
+    private LocalDateTime lastUpdatedTime;
+
     @OneToMany(mappedBy = "session")
     private Set<ChatMessage> chatMessages = new LinkedHashSet<>();
 
     @PrePersist
     protected void onCreate() {
         createdTime = LocalDateTime.now();
+        lastUpdatedTime = LocalDateTime.now();
     }
 }

@@ -127,6 +127,34 @@ public class RepairIssueServiceImpl implements RepairIssueService {
         repairIssueRepository.save(issue);
     }
 
+    @Override
+    public List<RepairIssueDTO> getTasksForCurrentStaff(){
+        Long userId = StpUtil.getLoginIdAsLong();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("用户不存在"));
+
+        Staff staff = staffRepository.findByUser(user);
+        if (staff == null) {
+            throw new IllegalStateException("该用户不是工作人员");
+        }
+
+        List<RepairIssue> tasks = repairIssueRepository.findByAssigned(staff);
+        tasks.sort(Comparator
+                .comparingInt((RepairIssue issue) -> getStatusPriority(issue.getStatus()))
+                .thenComparing(RepairIssue::getCreatedTime, Comparator.reverseOrder())
+        );
+        return tasks.stream().map(RepairIssueDTO::new).toList();
+    }
+
+    // 定义一个状态优先级方法：数值越小优先级越高
+    private int getStatusPriority(RepairStatusType status) {
+        return switch (status) {
+            case PENDING -> 0;
+            case IN_PROGRESS -> 1;
+            default -> 2; // 其他状态排最后
+        };
+    }
+
     private void assignRepairIssueToStaff(RepairIssue issue) {
         String department = issue.getCategory().getDepartment();
         List<Staff> staffList = staffRepository.findByDepartment(department);
