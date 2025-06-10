@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 @Data
 @JsonView({UserInfoDTO.BasicView.class,UserInfoDTO.UpdatedInfoView.class,UserInfoDTO.UpdatedAvatarView.class,
-        StaffInfoDTO.BasicView.class, RepairIssueDTO.BasicView.class})
+        StaffInfoDTO.BasicView.class, RepairIssueDTO.BasicView.class,StaffInfoDTO.RatingView.class})
 public class ApiResponse<T> {
     private int code;
     private String message;
@@ -25,7 +25,7 @@ public class ApiResponse<T> {
         return new ApiResponse<>(status, msg, data);
     }
 
-    public static <T> ApiResponse<T> error(HttpStatus status, String msg,T data) {
+    public static <T> ApiResponse<T> error(HttpStatus status, String msg, T data) {
         return new ApiResponse<>(status, msg, data);
     }
 }
