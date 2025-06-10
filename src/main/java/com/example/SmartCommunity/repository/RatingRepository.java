@@ -30,4 +30,6 @@ public interface RatingRepository extends JpaRepository<StaffRating, Long> {
     List<ReviewDTO> findServicesByStaffId(@Param("staffId") Long staffId);
 
     boolean existsByRatedStaffAndRater(@NotNull Staff ratedStaff, @NotNull User rater);
+
+    List<StaffRating> findByRater_Id(Long raterId);
 }

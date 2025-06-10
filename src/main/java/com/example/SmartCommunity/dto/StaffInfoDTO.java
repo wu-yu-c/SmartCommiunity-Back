@@ -1,6 +1,7 @@
 package com.example.SmartCommunity.dto;
 
 import com.example.SmartCommunity.model.Staff;
+import com.example.SmartCommunity.model.StaffRating;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,9 @@ import java.math.BigDecimal;
 @Setter
 public class StaffInfoDTO {
     public interface BasicView {
+    }
+
+    public interface RatingView extends BasicView {
     }
 
     private Long userId;
@@ -38,6 +42,9 @@ public class StaffInfoDTO {
     @JsonView({BasicView.class, UserInfoDTO.BasicView.class})
     private BigDecimal averageRating;
 
+    @JsonView(RatingView.class)
+    private StaffRatingDTO userRating;
+
     public StaffInfoDTO(Staff staff) {
         userId = staff.getUser().getId();
         staffId = staff.getStaffId();
@@ -48,5 +55,10 @@ public class StaffInfoDTO {
         post = staff.getPost();
         jobDescription = staff.getJobDescription();
         averageRating = staff.getAverageRating();
+    }
+
+    // 设置评分的方法
+    public void setUserRating(StaffRating staffRating) {
+        this.userRating = new StaffRatingDTO(staffRating);
     }
 }

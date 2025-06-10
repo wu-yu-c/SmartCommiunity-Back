@@ -9,7 +9,7 @@ import java.util.List;
 public interface StaffService {
     StaffInfoDTO getStaffById(Long staffId);
 
-    List<Staff> getAllStaff();
+    List<StaffInfoDTO> getAllStaff();
 
     /**
      * 根据人名和部门筛选符合条件的工作人员

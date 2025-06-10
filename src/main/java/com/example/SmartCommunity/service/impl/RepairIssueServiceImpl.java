@@ -93,6 +93,7 @@ public class RepairIssueServiceImpl implements RepairIssueService {
     }
 
     @Override
+    @Transactional
     public void deleteRepairById(Long id){
         if(!repairIssueRepository.existsById(id))
             throw new NoSuchElementException("该报修事件不存在");

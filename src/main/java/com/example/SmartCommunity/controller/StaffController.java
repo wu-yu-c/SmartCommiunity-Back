@@ -42,14 +42,12 @@ public class StaffController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "获取职工信息成功", response));
     }
 
-    @JsonView(StaffInfoDTO.BasicView.class)
-    @Operation(summary = "获取工作人员列表", description = "返回工作人员列表，属性包括id、姓名、职位、头像、部门、平均分")
+    @JsonView(StaffInfoDTO.RatingView.class)
+    @Operation(summary = "获取工作人员列表", description = "返回工作人员列表，属性包括id、姓名、职位、头像、部门、平均分，以及当前用户对其评价")
     @GetMapping("/staffList")
+    @SaCheckLogin
     public ResponseEntity<ApiResponse<List<StaffInfoDTO>>> getStaffList() {
-        List<Staff> staff = staffService.getAllStaff();
-        List<StaffInfoDTO> response = staff.stream()
-                .map(StaffInfoDTO::new)
-                .collect(Collectors.toList());
+        List<StaffInfoDTO> response = staffService.getAllStaff();
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "职工列表获取成功", response));
     }
 
