@@ -123,6 +123,15 @@
             <version>2.16.1</version>
         </dependency>
 
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+
 		<!-- 阿里云通义千问的项目依赖 -->
 		<dependency>
 			<groupId>com.alibaba</groupId>

@@ -5,10 +5,11 @@ import com.example.SmartCommunity.model.RepairIssue;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class RepairIssueDTO {
+public class RepairIssueDTO implements Serializable {
     public interface BasicView {}
 
     @JsonView(BasicView.class)
@@ -40,6 +41,8 @@ public class RepairIssueDTO {
     private String assigned;
     private LocalDateTime completedDate;
     private String completionNote;
+
+    public RepairIssueDTO(){}
 
     public RepairIssueDTO(RepairIssue repairIssue) {
         issueId = repairIssue.getId();

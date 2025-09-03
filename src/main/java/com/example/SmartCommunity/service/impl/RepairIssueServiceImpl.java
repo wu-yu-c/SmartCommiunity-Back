@@ -17,6 +17,7 @@ import com.example.SmartCommunity.service.RepairIssueService;
 import com.example.SmartCommunity.util.OSSUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,7 +86,9 @@ public class RepairIssueServiceImpl implements RepairIssueService {
     }
 
     @Override
+    @Cacheable(value = "repair_issue", key = "#issueId")
     public RepairIssueDTO getRepairIssueInfo(Long issueId) {
+        System.out.println("正在查询数据库..."); // 用于测试是否命中缓存
         RepairIssue repairIssue = repairIssueRepository.findRepairIssueById(issueId)
                 .orElseThrow(()->new NoSuchElementException("该报修事件不存在"));
 
